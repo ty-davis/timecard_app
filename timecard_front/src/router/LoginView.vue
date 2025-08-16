@@ -2,12 +2,14 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+
+const router = useRouter();
+const auth = useAuthStore();
 
 const username = ref('');
 const password = ref('');
 const errorMessage = ref('');
-
-const router = useRouter();
 
 const handleLogin = async() => {
   errorMessage.value = '';
@@ -26,11 +28,8 @@ const handleLogin = async() => {
 
     const token = response.data.access_token;
 
-    localStorage.setItem('jwt', token);
-
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-    router.push('/');
+    auth.login(token);
+    router.push('/')
   } catch (error) {
     console.log(error);
     if (error.response && error.response.status === 401) {
@@ -38,13 +37,11 @@ const handleLogin = async() => {
     } else {
       errorMessage.value = 'An error occurred. Please try again later.';
     }
-    delete axios.defaults.headers.common['Authorization'];
   }
 }
 </script>
 
 <template>
-  <!-- ⚙️ THE FORM TEMPLATE -->
   <div class="login-container">
     <form @submit.prevent="handleLogin" class="login-form">
       <h2>Login to Your Account</h2>
@@ -89,7 +86,6 @@ const handleLogin = async() => {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #f4f4f4;
 }
 .login-form {
   padding: 2rem;

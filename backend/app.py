@@ -22,6 +22,15 @@ def create_app():
 
     return app
 
+app = create_app()
+
+@app.cli.command()
+def init_db():
+    """Initialize the database."""
+    if 'y' in input("Are you sure you want to do this? (y to proceed)").lower():
+        db.drop_all()
+        db.create_all()
+        print("Database tables created successfully!")
+
 if __name__ == '__main__':
-    app = create_app()
     app.run(debug=True)
