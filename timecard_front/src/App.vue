@@ -5,10 +5,19 @@ import Nav from '@/components/Nav.vue';
 </script>
 
 <template>
-  <Nav/>
-  <main>
-    <RouterView/>
-  </main>
+  <div class="main">
+    <Nav/>
+    <main>
+      <RouterView/>
+    </main>
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.main {
+  min-height: 100dvh;
+  max-width: 768px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>

@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 
+
 const username = ref('');
 const password = ref('');
 const errorMessage = ref('');
@@ -47,31 +48,19 @@ const handleRegister = async () => {
       <h2>Create an Account</h2>
 
       <div class="form-group">
-        <label for="username">Username</label>
-        <input
-          type="text"
-          id="username"
-          v-model="username"
-          placeholder="Enter your username"
-          required
-        />
+        <InputText type="text" id="username" v-model="username" placeholder="Username" required style="width: 100%;"/>
       </div>
 
       <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          v-model="password"
-          placeholder="Enter your password"
-          required
-        />
+        <InputText type="password" id="password" v-model="password" placeholder="Password" required style="width: 100%;"/>
       </div>
 
-      <button type="submit">Register</button>
+      <div class="form-group">
+        <Button type="submit">Register</Button>
+      </div>
 
-      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-      <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
+      <Message v-if="errorMessage" severity="error">{{ errorMessage }}</Message>
+      <Message v-if="successMessage" class="success-message">{{ successMessage }}</Message>
     </form>
   </div>
 </template>
@@ -81,55 +70,16 @@ const handleRegister = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f4f4f4;
+  height: calc(100dvh - 70px);
+  margin-left: auto;
+  margin-right: auto;
+  width: 400px;
+  max-width: 90%;
 }
 .register-form {
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
-}
-h2 {
-  margin-bottom: 1.5rem;
-  text-align: center;
 }
 .form-group {
-  margin-bottom: 1rem;
-}
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-button {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-button:hover {
-  background-color: #0056b3;
-}
-.error-message {
-  color: #d9534f;
-  margin-top: 1rem;
-  text-align: center;
-}
-.success-message {
-  color: #5cb85c;
-  margin-top: 1rem;
-  text-align: center;
+  margin: 10px 0px;
 }
 </style>
