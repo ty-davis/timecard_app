@@ -13,7 +13,10 @@ const visible = ref(false);
   <nav>
     <div class="navbar">
       <Drawer v-model:visible="visible" header="Menu" position="right">
-        This is in the drawer.
+        <div>
+          This is in the drawer.
+        </div>
+        <Button v-if="auth.isLoggedIn" @click="auth.logout">Logout</Button>
       </Drawer>
       <RouterLink to="/" class="page-title">Timecard</RouterLink>
       <Button icon="pi pi-bars" @click="visible = !visible"/>
@@ -23,7 +26,6 @@ const visible = ref(false);
 
 <style scoped>
 .navbar {
-  padding: 8px 32px;
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;

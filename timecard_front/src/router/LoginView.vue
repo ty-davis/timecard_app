@@ -46,88 +46,38 @@ const handleLogin = async() => {
     <form @submit.prevent="handleLogin" class="login-form">
       <h2>Login to Your Account</h2>
 
-      <!-- Username Input -->
       <div class="form-group">
-        <label for="username">Username</label>
-        <input
-          type="text"
-          id="username"
-          v-model="username"
-          placeholder="Enter your username"
-          required
-        />
+        <InputText type="text" id="username" v-model="username" placeholder="Username" required style="width: 100%;"/>
       </div>
 
-      <!-- Password Input -->
       <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          v-model="password"
-          placeholder="Enter your password"
-          required
-        />
+        <InputText type="password" id="password" v-model="password" placeholder="Password" required style="width: 100%;"/>
       </div>
 
-      <!-- Submit Button -->
-      <button type="submit">Login</button>
+      <div class="form-group">
+        <Button type="submit">Login</Button>
+      </div>
 
-      <!-- Error Message Display -->
-      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+      <Message v-if="errorMessage" severity="error">{{ errorMessage }}</Message>
     </form>
   </div>
 </template>
 
 <style scoped>
-/* 🎨 THE STYLES */
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: calc(100dvh - 60px);
+  margin-left: auto;
+  margin-right: auto;
+  width: 400px;
+  max-width: 90%;
 }
 .login-form {
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
-}
-h2 {
-  margin-bottom: 1.5rem;
-  text-align: center;
 }
 .form-group {
-  margin-bottom: 1rem;
-}
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-button {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #28a745; /* Green color for login */
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-button:hover {
-  background-color: #218838;
-}
-.error-message {
-  color: #d9534f;
-  margin-top: 1rem;
-  text-align: center;
+  margin: 10px 0px;
 }
 </style>

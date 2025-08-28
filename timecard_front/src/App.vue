@@ -19,5 +19,6 @@ import Nav from '@/components/Nav.vue';
   max-width: 768px;
   margin-left: auto;
   margin-right: auto;
+  padding: 8px 32px;
 }
 </style>
