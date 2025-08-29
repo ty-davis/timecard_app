@@ -31,7 +31,7 @@ const handleRegister = async () => {
     setTimeout(() => {
       router.push('/login')
     }, 2000);
-  } catch (error) {
+  } catch (error: any) {
     if (error.response && error.response.data.message) {
       errorMessage.value = error.response.data.message;
     } else {

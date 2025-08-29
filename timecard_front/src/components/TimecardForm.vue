@@ -36,31 +36,32 @@
       <div class="flex space-x-4">
         <div class="p-field flex-1 flex flex-col gap-2">
           <label for="timein">In:</label>
-          <InputText id="timein" type="datetime-local" v-model="localTimein" class="rounded-lg p-3" />
+          <DatePicker id="datepicker-12h" v-model="localTimein" showTime hourFormat="12" fluid/>
         </div>
       </div>
       
-      <div class="flex gap-2">
-        <Button 
-          type="submit" 
-          :label="`Clock ${record.id ? 'Out' : 'In'}`" 
-          icon="pi pi-check"
-          :disabled="!readyToSubmit"
-          class="p-button-success p-button-lg flex-grow"
+      <Button 
+        type="submit" 
+        :label="`Clock ${record.id ? 'Out' : 'In'}`" 
+        icon="pi pi-check"
+        :disabled="!readyToSubmit"
+        class="p-button-success p-button-lg flex-grow"
+      />
+      <div class="flex gap-2 flex-wrap">
+        <Button
+          v-if="timeRecord.id"
+          label="Choose Clock Out Time"
+          class="grow-3"
         />
         <Button
           v-if="timeRecord.id"
           label="Delete record"
           icon="pi pi-trash"
+          class="p-button-danger grow"
           @click="deleteConfirm()"
         />
       </div>
 
-      <Button
-        v-if="timeRecord.id"
-        label="Choose Clockout Time"
-        class="p-button-danger p-button-lg"
-      />
     </form>
   </div>
 </template>
@@ -78,7 +79,7 @@ const props = defineProps<{
   recordAttributes: RecordAttribute[];
 }>();
 
-const localTimein = ref<string>(toLocalDateTimeString(new Date()));
+const localTimein = ref<Date | null>(new Date());
 
 const emit = defineEmits(['save-record', 'delete-record']);
 
@@ -121,7 +122,7 @@ watch(() => props.timeRecord, async (newRecord) => {
     selectedDomain.value = '';
     selectedCategory.value = '';
     selectedTitle.value = '';
-    localTimein.value = toLocalDateTimeString(new Date());
+    localTimein.value = new Date();
     return;
   }
 
@@ -137,7 +138,7 @@ watch(() => props.timeRecord, async (newRecord) => {
       selectedTitle.value = props.recordAttributes.find(attr => attr.id === newRecord.title_id) || selectedTitle.value;
     }
 
-    localTimein.value = toLocalDateTimeString(new Date(props.timeRecord.timein));
+    localTimein.value = new Date(props.timeRecord.timein);
 
     await nextTick();
     isPopulating.value = false;
@@ -166,20 +167,29 @@ watch(selectedCategory, (newValue, oldValue) => {
 });
 
 const prepTimeRecord = () => {
-  const localDateTimeIn = new Date(localTimein.value);
-  const utcDateTimeIn = localDateTimeIn.toISOString();
+  if (!localTimein.value) {
+    throw new Error('time in is missing.');
+  }
+  const utcDateTimeIn = localTimein.value.toISOString();
 
-  record.domain_id = typeof selectedDomain.value === 'object' 
-    ? (selectedDomain.value?.id || null) 
-    : selectedDomain.value;
+  if (!selectedDomain.value || !selectedCategory.value || !selectedTitle.value) {
+    throw new Error('A record attribute is missing');
+  }
+
+  if (typeof selectedDomain.value === 'object' && selectedDomain.value.id)
+    record.domain_id = selectedDomain.value.id;
+  else if (typeof selectedDomain.value === 'string')
+    record.domain_id = selectedDomain.value;
   
-  record.category_id = typeof selectedCategory.value === 'object'
-    ? (selectedCategory.value?.id || null)
-    : selectedCategory.value;
+  if (typeof selectedCategory.value === 'object' && selectedCategory.value.id)
+    record.category_id = selectedCategory.value.id;
+  else if (typeof selectedCategory.value === 'string')
+    record.category_id = selectedCategory.value;
     
-  record.title_id = typeof selectedTitle.value === 'object'
-    ? (selectedTitle.value?.id || null)
-    : selectedTitle.value;
+  if (typeof selectedTitle.value === 'object' && selectedTitle.value.id)
+    record.title_id = selectedTitle.value.id 
+  else if (typeof selectedTitle.value === 'string')
+    record.title_id = selectedTitle.value;
 
   record.timein = utcDateTimeIn;
   record.timeout = new Date().toISOString();

@@ -15,11 +15,11 @@ const recentRecords = ref<TimeRecord[]>([]);
 const openRecords = ref<TimeRecord[]>([]);
 const recordAttributes = ref<RecordAttribute[]>([]);
 const newRecord = ref<TimeRecord>({
-  id: null,
-  domain_id: null,
-  category_id: null,
-  title_id: null,
-  timein: null,
+  id: undefined,
+  domain_id: '',
+  category_id: '',
+  title_id: '',
+  timein: '',
   timeout: null
 });
 
@@ -27,7 +27,7 @@ const getRecordAttributes = async () => {
   try {
     const response = await axios.get('/api/recordattributes');
     recordAttributes.value = response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Request failed:', error.response?.data);
   }
 }
@@ -36,8 +36,8 @@ const getTimeRecords = async () => {
   try {
     const response = await axios.get('/api/timerecords');
     recentRecords.value = response.data;
-    openRecords.value = response.data.filter(r => r.timeout === null);
-  } catch (error) {
+    openRecords.value = response.data.filter((r: TimeRecord) => r.timeout === null);
+  } catch (error: any) {
     console.error('Request failed:', error.response?.data);
 
     if (error.response?.status === 401) {
@@ -56,15 +56,15 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
     // Refresh the time records to show updated data
     await getTimeRecords();
     newRecord.value = {
-      id: null,
-      domain_id: null,
-      category_id: null,
-      title_id: null,
-      timein: null,
+      id: undefined,
+      domain_id: '',
+      category_id: '',
+      title_id: '',
+      timein: '',
       timeout: null
     };
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to save record:', error.response?.data);
     
     if (error.response?.status === 401) {
@@ -79,7 +79,7 @@ const deleteTimeRecord = async (recordToDelete: TimeRecord) => {
     await axios.delete(`/api/timerecords/${recordToDelete.id}`);
     
     await getTimeRecords();
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to delete record:', error.response?.data);
 
     if (error.response?.status === 401) {
@@ -112,7 +112,7 @@ const timeDifference = (record: TimeRecord) => {
   if (!(record.timein && record.timeout)) {
     return '';
   }
-  let diff = Math.abs(new Date(record.timein) - new Date(record.timeout));
+  let diff = Math.abs(new Date(record.timein).getTime() - new Date(record.timeout).getTime());
   diff = diff / 1000;
   const hours = Math.floor(diff / 3600);
   if (hours) { diff = diff - hours * 3600; }
