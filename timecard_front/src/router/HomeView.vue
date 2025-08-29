@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 import TimecardForm from '@/components/TimecardForm.vue';
 import type { TimeRecord, RecordAttribute } from '@/types';
+import { toLocalDateTimeString } from '@/utils/timeUtils';
 
 const auth = useAuthStore();
 const recentRecords = ref<TimeRecord[]>([]);
@@ -45,7 +46,7 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
   try {
     const method = updatedRecord.id ? 'put' : 'post';
     const url = updatedRecord.id ? `/api/timerecords/${updatedRecord.id}` : '/api/timerecords';
-    
+    console.log(updatedRecord);
     const response = await axios[method](url, updatedRecord);
     
     console.log('Record saved successfully:', response.data);
@@ -63,23 +64,27 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
 };
 
 
-const toLocalDateTimeString = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-};
-
 const populateNewRecordInfo = () => {
   newRecord.value.domain_id = 1;
   newRecord.value.category_id = 2;
   newRecord.value.title_id = 3;
 
   newRecord.value.timein = toLocalDateTimeString(new Date());
+}
+
+const timeDifference = (record: TimeRecord) => {
+  if (!(record.timein && record.timeout)) {
+    return '';
+  }
+  let diff = Math.abs(new Date(record.timein) - new Date(record.timeout));
+  diff = diff / 1000;
+  const hours = Math.floor(diff / 3600);
+  if (hours) { diff = diff - hours * 3600; }
+
+  const minutes = Math.floor(diff / 60);
+  if (minutes) { diff = diff - minutes * 60 }
+
+  return `${hours}:${minutes}:${diff}`
 }
 
 watch(recordAttributes, (newVal) => {
@@ -103,7 +108,7 @@ onMounted(async () => {
   <div class="content">
     <div v-if="auth.isLoggedIn">
       <!-- TODO: maybe use Panel -->
-      <Panel class="main-card" header="New record" toggleable collapsed>
+      <Panel class="main-card" header="New record" toggleable :collapsed="openRecords.length > 0">
         <TimecardForm
           :recordAttributes="recordAttributes"
           :timeRecord="newRecord"
@@ -127,6 +132,7 @@ onMounted(async () => {
             {{ recordAttributes.find(ra => ra.id === record.domain_id)?.name }} -
             {{ recordAttributes.find(ra => ra.id === record.category_id)?.name }} -
             {{ recordAttributes.find(ra => ra.id === record.title_id)?.name }}
+            {{ timeDifference(record) }}
           </div>
         </template>
       </Panel>

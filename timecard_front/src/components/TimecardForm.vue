@@ -41,7 +41,7 @@
       <div class="flex space-x-4">
         <div class="p-field flex-1 flex flex-col gap-2">
           <label for="timein">In:</label>
-          <InputText id="timein" type="datetime-local" v-model="record.timein" class="rounded-lg p-3" />
+          <InputText id="timein" type="datetime-local" v-model="localTimein" class="rounded-lg p-3" />
         </div>
       </div>
       
@@ -63,12 +63,15 @@
 <script setup lang="ts">
 import { ref, watch, reactive, toRefs } from 'vue';
 import type { RecordAttribute, TimeRecord } from '@/types';
+import { toLocalDateTimeString } from '@/utils/timeUtils';
 
 // --- Props & Emits ---
 const props = defineProps<{
   timeRecord: TimeRecord;
   recordAttributes: RecordAttribute[];
 }>();
+
+const localTimein = ref<string>(toLocalDateTimeString(new Date()));
 
 const emit = defineEmits(['save-record']);
 
@@ -91,21 +94,21 @@ const titleSuggestions = ref<RecordAttribute[]>([]);
  * Watcher to pre-populate the AutoComplete components when the timeRecord prop changes.
  */
 watch(() => props.timeRecord, (newRecord) => {
-  // Update the reactive record object with the new prop values.
   Object.assign(record, newRecord);
+  console.log(props.timeRecord, newRecord);
 
-  // If a domain_id exists, find the corresponding object and set the selected value
   if (newRecord.domain_id !== null) {
-    selectedDomain.value = props.recordAttributes.find(attr => attr.id === newRecord.domain_id) || null;
+    selectedDomain.value = props.recordAttributes.find(attr => attr.id === newRecord.domain_id) || selectedDomain.value;
   }
-  // If a category_id exists, find the corresponding object and set the selected value
   if (newRecord.category_id !== null) {
     selectedCategory.value = props.recordAttributes.find(attr => attr.id === newRecord.category_id) || null;
   }
-  // If a title_id exists, find the corresponding object and set the selected value
   if (newRecord.title_id !== null) {
     selectedTitle.value = props.recordAttributes.find(attr => attr.id === newRecord.title_id) || null;
   }
+
+  console.log(props.timeRecord.timein);
+  localTimein.value = toLocalDateTimeString(new Date(props.timeRecord.timein));
 }, { immediate: true, deep: true });
 
 // --- AutoComplete Logic ---
@@ -116,7 +119,6 @@ watch(() => props.timeRecord, (newRecord) => {
 const search = (event: { query: string }, level: number) => {
   const query = event.query.toLowerCase();
 
-  // Determine the parent_id to filter by based on the level.
   let parentId: number | null = null;
   if (level === 2 && typeof selectedDomain.value === 'object' && selectedDomain.value) {
     parentId = selectedDomain.value.id || null;
@@ -125,14 +127,12 @@ const search = (event: { query: string }, level: number) => {
     parentId = selectedCategory.value.id || null;
   }
   
-  // Filter the provided database
   const filtered = props.recordAttributes.filter(attr => 
     attr.level_num === level &&
     (parentId === null || attr.parent_id === parentId) &&
     attr.name.toLowerCase().includes(query)
   );
 
-  // Set the suggestions for the correct level
   if (level === 1) {
     domainSuggestions.value = filtered;
   } else if (level === 2) {
@@ -150,13 +150,13 @@ watch(selectedDomain, (newValue, oldValue) => {
     selectedCategory.value = null;
     selectedTitle.value = null;
   }
-});
+}, { immediate: true });
 
 watch(selectedCategory, (newValue, oldValue) => {
   if (newValue !== oldValue) {
     selectedTitle.value = null;
   }
-});
+}, { immediate: true });
 
 // --- Form Submission Logic ---
 /**
@@ -165,24 +165,25 @@ watch(selectedCategory, (newValue, oldValue) => {
  */
 const submitTimeRecord = () => {
 
-  const localDateTimeIn = new Date(record.timein);
-  const utcDateTimeIn = localDateTimeIn.toISOString().slice(0, 19);
+  const localDateTimeIn = new Date(localTimein.value);
+  const utcDateTimeIn = localDateTimeIn.toISOString();
 
   // Update the record's ID fields based on the selections.
+  console.log(selectedDomain.value);
   record.domain_id = typeof selectedDomain.value === 'object' 
     ? (selectedDomain.value?.id || null) 
-    : null;
+    : selectedDomain.value;
   
   record.category_id = typeof selectedCategory.value === 'object'
     ? (selectedCategory.value?.id || null)
-    : null;
+    : selectedCategory.value;
     
   record.title_id = typeof selectedTitle.value === 'object'
     ? (selectedTitle.value?.id || null)
-    : null;
+    : selectedTitle.value;
 
   record.timein = utcDateTimeIn;
-  record.timeout = new Date().toISOString().slice(0, 19);
+  record.timeout = new Date().toISOString();
 
   // Emit the updated record to the parent component.
   emit('save-record', record);

@@ -38,7 +38,10 @@ class TimeRecord(db.Model):
             'domain_id': self.domain_id,
             'category_id': self.category_id,
             'title_id': self.title_id,
-            'timein': self.timein.strftime('%Y-%m-%dT%H:%M:%S') if self.timein else None,
-            'timeout': self.timeout.strftime('%Y-%m-%dT%H:%M:%S') if self.timeout else None,
+            'timein': self.timein.strftime('%Y-%m-%dT%H:%M:%SZ') if self.timein else None,
+            'timeout': self.timeout.strftime('%Y-%m-%dT%H:%M:%SZ') if self.timeout else None,
         }
+
+    def __str__(self):
+        return f"{self.id}: {self.domain_id} {self.category_id} {self.title_id} || {self.timein} - {self.timeout}"
 
