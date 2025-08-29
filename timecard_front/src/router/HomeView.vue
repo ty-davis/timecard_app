@@ -19,7 +19,7 @@ const newRecord = ref<TimeRecord>({
   domain_id: '',
   category_id: '',
   title_id: '',
-  timein: '',
+  timein: new Date(),
   timeout: null
 });
 

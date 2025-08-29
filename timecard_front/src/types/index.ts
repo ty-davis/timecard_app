@@ -13,6 +13,6 @@ export interface TimeRecord {
   domain_id: number | string
   category_id: number | string
   title_id: number | string
-  timein: string
-  timeout: string | null
+  timein: string | Date
+  timeout: string | Date | null
 }
