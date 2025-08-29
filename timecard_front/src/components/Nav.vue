@@ -19,7 +19,7 @@ const visible = ref(false);
         <Button v-if="auth.isLoggedIn" @click="auth.logout">Logout</Button>
       </Drawer>
       <RouterLink to="/" class="page-title">Timecard</RouterLink>
-      <Button icon="pi pi-bars" @click="visible = !visible"/>
+      <Button icon="pi pi-bars" @click="visible = !visible" link/>
     </div>
   </nav>
 </template>

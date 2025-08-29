@@ -10,9 +10,9 @@ export interface RecordAttribute {
 
 export interface TimeRecord {
   id?: number
-  domain_id: number
-  category_id: number
-  title_id: number
+  domain_id: number | string
+  category_id: number | string
+  title_id: number | string
   timein: string
   timeout: string | null
 }
