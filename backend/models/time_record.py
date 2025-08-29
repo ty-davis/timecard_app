@@ -19,6 +19,10 @@ class RecordAttribute(db.Model):
             'color': self.color
         }
 
+    def __str__(self):
+        return f"{self.id}: {self.name} - {self.parent_id} | {self.user_id} | {self.level_num} | {self.color}"
+
+
 class TimeRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

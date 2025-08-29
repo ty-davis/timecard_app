@@ -11,8 +11,6 @@ time_records_bp = Blueprint('time_records', __name__)
 def get_time_records():
     current_user_id = get_jwt_identity()
     items = TimeRecord.query.filter_by(user_id=current_user_id).all()
-    for item in items:
-        print(item)
     return jsonify([item.to_dict() for item in items])
 
 
@@ -123,7 +121,6 @@ def update_time_record(record_id):
 
     if 'timeout' in data and data['timeout']:
         try:
-            print("TIMEOUT", data['timeout'])
             timeout = datetime.strptime(data['timeout'], '%Y-%m-%dT%H:%M:%S.%fZ')
             timeout.replace(tzinfo=timezone.utc)
             record.timeout = timeout
