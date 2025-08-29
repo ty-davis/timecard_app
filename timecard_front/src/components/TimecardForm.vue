@@ -39,19 +39,36 @@
           <DatePicker id="datepicker-12h" v-model="localTimein" showTime hourFormat="12" fluid/>
         </div>
       </div>
-      
-      <Button 
-        type="submit" 
-        :label="`Clock ${record.id ? 'Out' : 'In'}`" 
-        icon="pi pi-check"
-        :disabled="!readyToSubmit"
-        class="p-button-success p-button-lg flex-grow"
-      />
+
+      <div v-if="timeRecord.id">
+        <div class="flex space-x-4">
+          <Checkbox v-model="showTimeout" binary />
+          <span>
+            Choose clock out time
+          </span>
+        </div>
+        <div v-if="showTimeout" class="p-field flex-1 flex flex-col gap-2">
+          <label for="timeout">Out:</label>
+          <DatePicker v-model="localTimeout" showTime hourFormat="12" fluid/>
+        </div>
+      </div>
+
+      <div class="flex gap-2 flex-wrap">
+        <Button 
+          type="submit" 
+          :label="`Clock ${record.id ? 'Out' : 'In'}`" 
+          icon="pi pi-check"
+          :disabled="!readyToSubmit"
+          class="p-button-success p-button-lg grow-3"
+        />
+      </div>
       <div class="flex gap-2 flex-wrap">
         <Button
           v-if="timeRecord.id"
-          label="Choose Clock Out Time"
-          class="grow-3"
+          label="Save Changes"
+          :disabled="!readyToSubmit"
+          class="p-button-lg grow"
+          @click="saveChanges"
         />
         <Button
           v-if="timeRecord.id"
@@ -80,6 +97,8 @@ const props = defineProps<{
 }>();
 
 const localTimein = ref<Date | null>(new Date());
+const localTimeout = ref<Date | null>(null);
+const showTimeout = ref<boolean>(false);
 
 const emit = defineEmits(['save-record', 'delete-record']);
 
@@ -166,11 +185,20 @@ watch(selectedCategory, (newValue, oldValue) => {
   }
 });
 
-const prepTimeRecord = () => {
+const prepTimeRecord = (clockOut: boolean) => {
   if (!localTimein.value) {
     throw new Error('time in is missing.');
   }
+  console.log(localTimein.value);
   const utcDateTimeIn = localTimein.value.toISOString();
+  console.log(utcDateTimeIn);
+
+  let utcDateTimeOut = null;
+  if (showTimeout.value && localTimeout.value && clockOut) {
+    utcDateTimeOut = localTimeout.value.toISOString();
+  } else if (clockOut) {
+    utcDateTimeOut = new Date().toISOString();
+  }
 
   if (!selectedDomain.value || !selectedCategory.value || !selectedTitle.value) {
     throw new Error('A record attribute is missing');
@@ -192,12 +220,17 @@ const prepTimeRecord = () => {
     record.title_id = selectedTitle.value;
 
   record.timein = utcDateTimeIn;
-  record.timeout = new Date().toISOString();
+  record.timeout = utcDateTimeOut;
 
 }
 
+const saveChanges = () => {
+  prepTimeRecord(false);
+  emit('save-record', record);
+}
+
 const submitTimeRecord = () => {
-  prepTimeRecord();
+  prepTimeRecord(true);
   emit('save-record', record);
 };
 

@@ -94,35 +94,36 @@ def update_time_record(record_id):
 
     data = request.get_json()
 
-    print(data)
-
     if not isinstance(data['domain_id'], int):
         domain_id = create_record_attribute(current_user_id, data['domain_id'], None, 1)
         record.domain_id = domain_id
     else:
         record.domain_id = data['domain_id']
 
-    print("RIGHT HERE")
 
     if not isinstance(data['category_id'], int):
         category_id = create_record_attribute(current_user_id, data['category_id'], record.domain_id, 2)
         record.category_id = category_id
     else:
         record.category_id = data['category_id']
-    print("RIGHT HERE 2")
 
     if not isinstance(data['title_id'], int):
         title_id = create_record_attribute(current_user_id, data['title_id'], record.category_id, 3)
         record.title_id = title_id
     else:
         record.title_id = data['title_id']
-    print("RIGHT HERE 3")
 
-    print("DATA NEW:", data)
+    if 'timein' in data and data['timein']:
+        try:
+            timein = datetime.strptime(data['timein'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            timein.replace(tzinfo=timezone.utc)
+            record.timein = timein
+        except (ValueError, TypeError):
+            return jsonify({"msg": "Invalid timein format."}), 400
 
     if 'timeout' in data and data['timeout']:
         try:
-            print(data['timeout'])
+            print("TIMEOUT", data['timeout'])
             timeout = datetime.strptime(data['timeout'], '%Y-%m-%dT%H:%M:%S.%fZ')
             timeout.replace(tzinfo=timezone.utc)
             record.timeout = timeout
