@@ -235,7 +235,7 @@ const submitTimeRecord = () => {
 };
 
 const deleteTimeRecord = () => {
-  prepTimeRecord();
+  prepTimeRecord(false);
   emit('delete-record', record);
 }
 
