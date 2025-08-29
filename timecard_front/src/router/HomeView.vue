@@ -5,8 +5,12 @@ import { useAuthStore } from '@/stores/auth';
 import TimecardForm from '@/components/TimecardForm.vue';
 import type { TimeRecord, RecordAttribute } from '@/types';
 import { toLocalDateTimeString } from '@/utils/timeUtils';
+import { useConfirm } from 'primevue/useconfirm';
+
+const confirm = useConfirm();
 
 const auth = useAuthStore();
+const isFirstLoading = ref(true);
 const recentRecords = ref<TimeRecord[]>([]);
 const openRecords = ref<TimeRecord[]>([]);
 const recordAttributes = ref<RecordAttribute[]>([]);
@@ -18,6 +22,15 @@ const newRecord = ref<TimeRecord>({
   timein: null,
   timeout: null
 });
+
+const getRecordAttributes = async () => {
+  try {
+    const response = await axios.get('/api/recordattributes');
+    recordAttributes.value = response.data;
+  } catch (error) {
+    console.error('Request failed:', error.response?.data);
+  }
+}
 
 const getTimeRecords = async () => {
   try {
@@ -33,26 +46,23 @@ const getTimeRecords = async () => {
   }
 }
 
-const getRecordAttributes = async () => {
-  try {
-    const response = await axios.get('/api/recordattributes');
-    recordAttributes.value = response.data;
-  } catch (error) {
-    console.error('Request failed:', error.response?.data);
-  }
-}
-
 const handleSaveRecord = async (updatedRecord: TimeRecord) => {
   try {
     const method = updatedRecord.id ? 'put' : 'post';
     const url = updatedRecord.id ? `/api/timerecords/${updatedRecord.id}` : '/api/timerecords';
-    console.log(updatedRecord);
     const response = await axios[method](url, updatedRecord);
     
-    console.log('Record saved successfully:', response.data);
     
     // Refresh the time records to show updated data
     await getTimeRecords();
+    newRecord.value = {
+      id: null,
+      domain_id: null,
+      category_id: null,
+      title_id: null,
+      timein: null,
+      timeout: null
+    };
     
   } catch (error) {
     console.error('Failed to save record:', error.response?.data);
@@ -63,11 +73,37 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
   }
 };
 
+const deleteTimeRecord = async (recordToDelete: TimeRecord) => {
+  try {
+    console.log("deleting:", recordToDelete);
+    await axios.delete(`/api/timerecords/${recordToDelete.id}`);
+    
+    await getTimeRecords();
+  } catch (error) {
+    console.error('Failed to delete record:', error.response?.data);
+
+    if (error.response?.status === 401) {
+      auth.logout();
+    }
+  }
+}
+
+const deleteConfirm = (record: TimeRecord) => {
+  confirm.require({
+    message: 'Do you want to delete this record?',
+    header: 'Delete Confirmation',
+    icon: 'pi pi-info-circle',
+    acceptClass: 'p-button-danger',
+    accept: () => {
+      deleteTimeRecord(record);
+    }
+  })
+}
 
 const populateNewRecordInfo = () => {
-  newRecord.value.domain_id = 1;
-  newRecord.value.category_id = 2;
-  newRecord.value.title_id = 3;
+  newRecord.value.domain_id = '';
+  newRecord.value.category_id = '';
+  newRecord.value.title_id = '';
 
   newRecord.value.timein = toLocalDateTimeString(new Date());
 }
@@ -87,11 +123,10 @@ const timeDifference = (record: TimeRecord) => {
   return `${hours}:${minutes}:${diff}`
 }
 
-watch(recordAttributes, (newVal) => {
+watch(recordAttributes, async (newVal) => {
   if (newVal && newVal.length > 0) {
-    nextTick(() => {
-      populateNewRecordInfo();
-    });
+    await nextTick();
+    populateNewRecordInfo();
   }
 });
 
@@ -99,16 +134,16 @@ onMounted(async () => {
   if (auth.isLoggedIn) {
     await getRecordAttributes();
     await getTimeRecords();
+    isFirstLoading.value = false;
 
   }
 })
 </script>
 
 <template>
-  <div class="content">
+  <div class="">
     <div v-if="auth.isLoggedIn">
-      <!-- TODO: maybe use Panel -->
-      <Panel class="main-card" header="New record" toggleable :collapsed="openRecords.length > 0">
+      <Panel class="" header="New record" toggleable :collapsed="openRecords.length > 0 || isFirstLoading">
         <TimecardForm
           :recordAttributes="recordAttributes"
           :timeRecord="newRecord"
@@ -116,24 +151,29 @@ onMounted(async () => {
         />
       </Panel>
 
-      <Panel class="main-card" :header="`Open timecard${ openRecords.length > 1 ? 's' : ''}`">
-        <template v-for="openRecord in openRecords">
-          <TimecardForm
-            :recordAttributes="recordAttributes"
-            :timeRecord="openRecord"
-            @save-record="handleSaveRecord"
-          />
-        </template>
+      <Panel class="mt-6" :header="`Open timecard${ openRecords.length > 1 ? 's' : ''}`">
+        <div class="flex flex-col gap-16">
+          <template v-for="openRecord in openRecords">
+            <TimecardForm
+              :recordAttributes="recordAttributes"
+              :timeRecord="openRecord"
+              @save-record="handleSaveRecord"
+              @delete-record="deleteTimeRecord"
+            />
+          </template>
+        </div>
       </Panel>
 
-      <Panel class="main-card" header="History">
+      <Panel class="mt-6" header="History">
         <template v-for="record in recentRecords">
-          <div>
-            {{ recordAttributes.find(ra => ra.id === record.domain_id)?.name }} -
-            {{ recordAttributes.find(ra => ra.id === record.category_id)?.name }} -
-            {{ recordAttributes.find(ra => ra.id === record.title_id)?.name }}
-            {{ timeDifference(record) }}
+          <div class="flex gap-2 items-baseline">
+            <span>{{ recordAttributes.find(ra => ra.id === record.domain_id)?.name }}</span>
+            <span>{{ recordAttributes.find(ra => ra.id === record.category_id)?.name }}</span>
+            <span>{{ recordAttributes.find(ra => ra.id === record.title_id)?.name }}</span>
+            <span>{{ timeDifference(record) }}</span>
+            <span><Button link icon="pi pi-trash" class="p-0 m-0 p-button-sm" @click="deleteConfirm(record)"></Button></span>
           </div>
+
         </template>
       </Panel>
     </div>
@@ -151,10 +191,4 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.content {
-  margin-top: 1rem;
-}
-.main-card {
-  margin-top: 1rem;
-}
 </style>

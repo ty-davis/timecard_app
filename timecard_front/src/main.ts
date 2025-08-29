@@ -6,10 +6,13 @@ import 'primeicons/primeicons.css';
 import App from './App.vue';
 import router from './router/index.ts';
 import './styles.css';
+import ConfirmationService from 'primevue/confirmationservice';
+
 
 import AutoComplete from 'primevue/autocomplete';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
+import ConfirmDialog from 'primevue/confirmdialog';
 import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import Panel from 'primevue/panel';
@@ -24,10 +27,12 @@ app.use(PrimeVue, {
     preset: TheTheme
   }
 })
+app.use(ConfirmationService);
 
 app.component('AutoComplete', AutoComplete);
 app.component('Button', Button);
 app.component('Card', Card);
+app.component('ConfirmDialog', ConfirmDialog);
 app.component('InputText', InputText);
 app.component('Message', Message);
 app.component('Panel', Panel);

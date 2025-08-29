@@ -105,14 +105,14 @@ def update_time_record(record_id):
     print("RIGHT HERE")
 
     if not isinstance(data['category_id'], int):
-        category_id = create_record_attribute(current_user_id, data['category_id'], data['domain_id'], 2)
+        category_id = create_record_attribute(current_user_id, data['category_id'], record.domain_id, 2)
         record.category_id = category_id
     else:
         record.category_id = data['category_id']
     print("RIGHT HERE 2")
 
     if not isinstance(data['title_id'], int):
-        title_id = create_record_attribute(current_user_id, data['title_id'], data['category_id'], 3)
+        title_id = create_record_attribute(current_user_id, data['title_id'], record.category_id, 3)
         record.title_id = title_id
     else:
         record.title_id = data['title_id']
@@ -134,3 +134,19 @@ def update_time_record(record_id):
     db.session.commit()
 
     return jsonify(record.to_dict()), 200
+
+
+@time_records_bp.route('/timerecords/<int:record_id>', methods=['DELETE'])
+@jwt_required()
+def delete_time_record(record_id):
+    current_user_id = get_jwt_identity()
+    
+    record = TimeRecord.query.filter_by(id=record_id, user_id=current_user_id).first()
+    
+    if not record:
+        return jsonify({"msg": "Record not found or access denied"}), 404
+    
+    db.session.delete(record)
+    db.session.commit()
+    
+    return jsonify({"msg": "Record deleted successfully"}), 200

@@ -5,6 +5,7 @@ import Nav from '@/components/Nav.vue';
 </script>
 
 <template>
+  <ConfirmDialog></ConfirmDialog>
   <div class="main">
     <Nav/>
     <main>
