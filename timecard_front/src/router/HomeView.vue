@@ -3,8 +3,9 @@ import { ref, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 import TimecardForm from '@/components/TimecardForm.vue';
+import LittleRecord from '@/components/LittleRecord.vue';
 import type { TimeRecord, RecordAttribute } from '@/types';
-import { toLocalDateTimeString } from '@/utils/timeUtils';
+import { toLocalDateTimeString, showTimeDifference } from '@/utils/timeUtils';
 import { useConfirm } from 'primevue/useconfirm';
 
 const confirm = useConfirm();
@@ -55,6 +56,7 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
     
     
     // Refresh the time records to show updated data
+    await getRecordAttributes();
     await getTimeRecords();
     newRecord.value = {
       id: undefined,
@@ -109,21 +111,6 @@ const populateNewRecordInfo = () => {
   newRecord.value.timein = toLocalDateTimeString(new Date());
 }
 
-const timeDifference = (record: TimeRecord) => {
-  if (!(record.timein && record.timeout)) {
-    return '';
-  }
-  let diff = Math.abs(new Date(record.timein).getTime() - new Date(record.timeout).getTime());
-  diff = diff / 1000;
-  const hours = Math.floor(diff / 3600);
-  if (hours) { diff = diff - hours * 3600; }
-
-  const minutes = Math.floor(diff / 60);
-  if (minutes) { diff = diff - minutes * 60 }
-
-  return `${hours}:${minutes}:${diff}`
-}
-
 watch(recordAttributes, async (newVal) => {
   if (newVal && newVal.length > 0) {
     await nextTick();
@@ -166,15 +153,8 @@ onMounted(async () => {
       </Panel>
 
       <Panel class="mt-6" header="History">
-        <template v-for="record in recentRecords">
-          <div class="flex gap-2 items-baseline">
-            <span>{{ recordAttributes.find(ra => ra.id === record.domain_id)?.name }}</span>
-            <span>{{ recordAttributes.find(ra => ra.id === record.category_id)?.name }}</span>
-            <span>{{ recordAttributes.find(ra => ra.id === record.title_id)?.name }}</span>
-            <span>{{ timeDifference(record) }}</span>
-            <span><Button link icon="pi pi-trash" class="p-0 m-0 p-button-sm" @click="deleteConfirm(record)"></Button></span>
-          </div>
-
+        <template v-for="record in recentRecords.sort((a, b) => new Date(b.timein).getTime() - new Date(a.timein).getTime())">
+          <LittleRecord :record="record" :recordAttributes="recordAttributes" @delete-record="deleteConfirm(record)"/>
         </template>
       </Panel>
     </div>

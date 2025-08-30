@@ -10,3 +10,17 @@ export const toLocalDateTimeString = (date: Date) => {
   return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 };
 
+export const showTimeDifference = (start: Date, end: Date) => {
+  let diff = Math.abs(start.getTime() - end.getTime());
+  diff = diff / 1000;
+  const hours = Math.floor(diff / 3600);
+  if (hours) { diff = diff - hours * 3600; }
+
+  const minutes = Math.floor(diff / 60);
+  if (minutes) { diff = diff - minutes * 60 }
+
+  if (hours) {
+    return `${hours}hr${minutes ? ' ' + minutes.toString() + 'min' : ''}`;
+  }
+  return `${minutes} min`
+}
