@@ -13,9 +13,6 @@ const visible = ref(false);
   <nav>
     <div class="navbar">
       <Drawer v-model:visible="visible" header="Menu" position="right">
-        <div>
-          This is in the drawer.
-        </div>
         <Button v-if="auth.isLoggedIn" @click="auth.logout">Logout</Button>
       </Drawer>
       <RouterLink to="/" class="page-title">Timecard</RouterLink>

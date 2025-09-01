@@ -21,3 +21,15 @@
 .p-autocomplete .p-inputtext {
   width: 100% !important;
 }
+
+.p-tabpanels {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.p-tablist-tab-list {
+  justify-content: space-around !important;
+  
+}
+.p-tab {
+  padding: 0 !important;
+}

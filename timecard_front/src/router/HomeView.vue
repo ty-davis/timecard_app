@@ -3,10 +3,17 @@ import { ref, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 import TimecardForm from '@/components/TimecardForm.vue';
+import Calendar from '@/components/Calendar.vue';
 import LittleRecord from '@/components/LittleRecord.vue';
 import type { TimeRecord, RecordAttribute } from '@/types';
 import { toLocalDateTimeString, showTimeDifference } from '@/utils/timeUtils';
 import { useConfirm } from 'primevue/useconfirm';
+
+import Tabs from 'primevue/tabs';
+import TabList from 'primevue/tablist';
+import Tab from 'primevue/tab';
+import TabPanels from 'primevue/tabpanels';
+import TabPanel from 'primevue/tabpanel';
 
 const confirm = useConfirm();
 
@@ -153,9 +160,23 @@ onMounted(async () => {
       </Panel>
 
       <Panel class="mt-6" header="History">
-        <template v-for="record in recentRecords.sort((a, b) => new Date(b.timein).getTime() - new Date(a.timein).getTime())">
-          <LittleRecord :record="record" :recordAttributes="recordAttributes" @delete-record="deleteConfirm(record)"/>
-        </template>
+        <Tabs value="1">
+          <TabList class="text-center">
+            <Tab value="0">List</Tab>
+            <Tab value="1">Calendar</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel value="0">
+              <template v-for="record in recentRecords.sort((a, b) => new Date(b.timein).getTime() - new Date(a.timein).getTime())">
+                <LittleRecord :record="record" :recordAttributes="recordAttributes" @delete-record="deleteConfirm(record)"/>
+              </template>
+            </TabPanel>
+            <TabPanel value="1">
+              <Calendar :records="recentRecords" :recordAttributes="recordAttributes">
+              </Calendar>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </Panel>
     </div>
     <div v-else>
@@ -172,4 +193,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+</style>
+<style>
 </style>
