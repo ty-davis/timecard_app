@@ -6,11 +6,34 @@ from datetime import datetime, timezone
 
 time_records_bp = Blueprint('time_records', __name__)
 
+DATE_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
+
 @time_records_bp.route('/timerecords', methods=['GET'])
 @jwt_required()
 def get_time_records():
     current_user_id = get_jwt_identity()
-    items = TimeRecord.query.filter_by(user_id=current_user_id).all()
+
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
+
+    query = TimeRecord.query.filter_by(user_id=current_user_id)
+
+    if start_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, DATE_FORMAT).date()
+            query = query.filter(TimeRecord.timein >= start_date)
+        except ValueError:
+            return jsonify({"msg": "Invalid start date format. Use YYYY-MM-DDTHH:MM:SS.sssZ"}), 400
+
+    if end_date_str:
+        try:
+            end_date = datetime.strptime(end_date_str, DATE_FORMAT).date()
+            query = query.filter(TimeRecord.timein < end_date)
+        except ValueError:
+            return jsonify({"msg": "Invalid end date format. Use YYYY-MM-DDTHH:MM:SS.sssZ"}), 400
+
+
+    items = query.order_by(TimeRecord.timein.desc()).all()
     return jsonify([item.to_dict() for item in items])
 
 
@@ -65,7 +88,7 @@ def create_time_record():
         data['title_id'] = title_id
 
 
-    timein = datetime.strptime(data['timein'], '%Y-%m-%dT%H:%M:%S.%fZ')
+    timein = datetime.strptime(data['timein'], DATE_FORMAT)
     timein.replace(tzinfo=timezone.utc)
     new_record = TimeRecord(
         user_id = current_user_id,
@@ -113,7 +136,7 @@ def update_time_record(record_id):
 
     if 'timein' in data and data['timein']:
         try:
-            timein = datetime.strptime(data['timein'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            timein = datetime.strptime(data['timein'], DATE_FORMAT)
             timein.replace(tzinfo=timezone.utc)
             record.timein = timein
         except (ValueError, TypeError):
@@ -121,7 +144,7 @@ def update_time_record(record_id):
 
     if 'timeout' in data and data['timeout']:
         try:
-            timeout = datetime.strptime(data['timeout'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            timeout = datetime.strptime(data['timeout'], DATE_FORMAT)
             timeout.replace(tzinfo=timezone.utc)
             record.timeout = timeout
         except (ValueError, TypeError):
