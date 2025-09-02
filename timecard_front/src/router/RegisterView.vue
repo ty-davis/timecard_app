@@ -21,9 +21,11 @@ const handleRegister = async () => {
   }
 
   try {
+    const passwordContent = password.value;
+    password.value = '';
     const response = await axios.post('api/register', {
       username: username.value,
-      password: password.value
+      password: passwordContent
     })
     
     successMessage.value = `${response.data.message}. Redirecting to login...`;

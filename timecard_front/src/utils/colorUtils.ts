@@ -8,16 +8,22 @@ export const secondaryColor = (color: string, darkModeMin: number = 0.25, lightM
 
     const minVal = Math.min(r, g, b);
     const maxVal = Math.max(r, g, b);
+    let bottom = maxVal - minVal;
+    if (bottom === 0) {
+        bottom = 0.0000001;
+    }
+
 
     let h = 0;
     if (maxVal === r) {
-      h = (g - b) / (maxVal - minVal);        
+      h = (g - b) / (bottom);        
     } else if (maxVal === g) {
-      h = 2.0 + (b - r)/(maxVal - minVal);
+      h = 2.0 + (b - r) / (bottom);
     } else {
-      h = 4.0 + (r - g)/ (maxVal - minVal);
+      h = 4.0 + (r - g) / (bottom);
     }
     h *= 60;
+    
 
     let l = (maxVal + minVal) / 2;
 

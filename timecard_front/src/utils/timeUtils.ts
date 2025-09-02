@@ -24,3 +24,23 @@ export const showTimeDifference = (start: Date, end: Date) => {
   }
   return `${minutes} min`
 }
+
+export const timeDiff = (start: Date, end: Date) => {
+  const diff = Math.abs(start.getTime() - end.getTime());
+  return diff;
+}
+
+export const showTime = (ms: number) => {
+  let sec = ms / 1000;
+  const hours = Math.floor(sec / 3600);
+  if (hours) { sec = sec - hours * 3600; }
+
+  const minutes = Math.floor(sec / 60);
+  if (minutes) { sec = sec - minutes * 60 }
+
+  if (hours) {
+    return `${hours}hr${minutes ? ' ' + minutes.toString() + 'min' : ''}`;
+  }
+  return `${minutes} min`
+
+}

@@ -16,3 +16,14 @@ export interface TimeRecord {
   timein: string | Date
   timeout: string | Date | null
 }
+
+export type CategoryRecord = {
+  timeDiff: number;
+  category_id: number | string;
+}
+
+export type SummaryData = {
+  domainId: number | string;
+  totalTime: number;
+  categoryRecords: CategoryRecord[];
+}

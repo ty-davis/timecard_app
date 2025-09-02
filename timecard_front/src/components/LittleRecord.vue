@@ -1,7 +1,11 @@
 <template>
   <div :class="{ border: showDetails, 'my-2': showDetails }" class="dark:border-mygray-700 border-mygray-200 rounded px-2">
     <div class="flex gap-2 items-baseline">
-      <span v-if="domainAttribute" :style="{borderColor: domainAttribute.color || 'transparent', backgroundColor: domainAttribute.color ? secondaryColor(domainAttribute.color) : 'transparent' }" class="border-2 rounded px-2 px-1" > {{ domainAttribute.name }}</span>
+      <RouterLink :to="`/info/${record.domain_id}`">
+        <span v-if="domainAttribute" :style="{borderColor: domainAttribute.color || 'transparent', backgroundColor: domainAttribute.color ? secondaryColor(domainAttribute.color) : 'transparent' }" class="border-2 rounded px-2 px-1" >
+          {{ domainAttribute.name }}
+        </span>
+      </RouterLink>
       <span v-if="categoryAttribute" :style="{borderColor: categoryAttribute.color || 'transparent' }" class="border-b-2">{{ categoryAttribute.name }}</span>
       <span class="ml-auto">{{ timeDifference(props.record) }}</span>
       <span class=""><Button link :icon="`pi ${showDetails ? 'pi-chevron-up' : 'pi-chevron-down'}`" class="p-0 m-0 p-button-sm" @click="showDetails = !showDetails"></Button></span>

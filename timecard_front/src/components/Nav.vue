@@ -13,7 +13,10 @@ const visible = ref(false);
   <nav>
     <div class="navbar">
       <Drawer v-model:visible="visible" header="Menu" position="right">
-        <Button v-if="auth.isLoggedIn" @click="auth.logout">Logout</Button>
+        <div class="flex flex-col gap-3">
+          <RouterLink v-if="auth.isLoggedIn" to="/report">Report</RouterLink>
+          <Button v-if="auth.isLoggedIn" @click="auth.logout">Logout</Button>
+        </div>
       </Drawer>
       <RouterLink to="/" class="page-title">Timecard</RouterLink>
       <Button icon="pi pi-bars" @click="visible = !visible" link/>

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import axios from 'axios';
+import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
+import { useRecordAttributesStore } from '@/stores/recordattributes';
 import TimecardForm from '@/components/TimecardForm.vue';
 import Calendar from '@/components/Calendar.vue';
 import LittleRecord from '@/components/LittleRecord.vue';
@@ -18,10 +20,13 @@ import TabPanel from 'primevue/tabpanel';
 const confirm = useConfirm();
 
 const auth = useAuthStore();
+const recordAttributesStore = useRecordAttributesStore();
+const { recordAttributes } = storeToRefs(recordAttributesStore);
 const isFirstLoading = ref(true);
 const recentRecords = ref<TimeRecord[]>([]);
-const openRecords = ref<TimeRecord[]>([]);
-const recordAttributes = ref<RecordAttribute[]>([]);
+const openRecords = computed(() => {
+  return recentRecords.value.filter((r: TimeRecord) => r.timeout === null);
+})
 const newRecord = ref<TimeRecord>({
   id: undefined,
   domain_id: '',
@@ -31,20 +36,11 @@ const newRecord = ref<TimeRecord>({
   timeout: null
 });
 
-const getRecordAttributes = async () => {
-  try {
-    const response = await axios.get('/api/recordattributes');
-    recordAttributes.value = response.data;
-  } catch (error: any) {
-    console.error('Request failed:', error.response?.data);
-  }
-}
 
 const getTimeRecords = async () => {
   try {
     const response = await axios.get('/api/timerecords');
     recentRecords.value = response.data;
-    openRecords.value = response.data.filter((r: TimeRecord) => r.timeout === null);
   } catch (error: any) {
     console.error('Request failed:', error.response?.data);
 
@@ -63,7 +59,7 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
     
     
     // Refresh the time records to show updated data
-    await getRecordAttributes();
+    await recordAttributesStore.getRecordAttributes();
     await getTimeRecords();
     newRecord.value = {
       id: undefined,
@@ -127,10 +123,15 @@ watch(recordAttributes, async (newVal) => {
 
 onMounted(async () => {
   if (auth.isLoggedIn) {
-    await getRecordAttributes();
-    await getTimeRecords();
-    isFirstLoading.value = false;
-
+    try {
+      await recordAttributesStore.getRecordAttributes();
+      await getTimeRecords();
+      isFirstLoading.value = false;
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        auth.logout();
+      }
+    }
   }
 })
 </script>
@@ -160,7 +161,7 @@ onMounted(async () => {
       </Panel>
 
       <Panel class="mt-6" header="History">
-        <Tabs value="1">
+        <Tabs value="0">
           <TabList class="text-center">
             <Tab value="0">List</Tab>
             <Tab value="1">Calendar</Tab>
