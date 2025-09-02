@@ -171,3 +171,34 @@ def delete_time_record(record_id):
     db.session.commit()
     
     return jsonify({"msg": "Record deleted successfully"}), 200
+
+
+
+
+@time_records_bp.route('/recordattributes/<int:attribute_id>', methods=['PUT'])
+@jwt_required()
+def update_record_attribute(attribute_id):
+    current_user_id = get_jwt_identity()
+
+    # Find the specific attribute ensuring it belongs to the current user
+    attribute = RecordAttribute.query.filter_by(id=attribute_id, user_id=current_user_id).first()
+
+    if not attribute:
+        return jsonify({"msg": "Record attribute not found or access denied"}), 404
+
+    data = request.get_json()
+
+    # Update fields if they are present in the request data
+    if 'name' in data:
+        attribute.name = data['name']
+    
+    if 'color' in data:
+        attribute.color = data['color']
+    
+    # Note: It's generally not recommended to allow changing parent_id or level_num
+    # via a simple update, as it can break the hierarchical integrity.
+    # If you need this functionality, add it with careful validation.
+
+    db.session.commit()
+
+    return jsonify(attribute.to_dict()), 200
