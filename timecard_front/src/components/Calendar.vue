@@ -37,11 +37,11 @@ const weeks = computed(() => {
   return weeks;
 })
 
-const inMonth: boolean = (d: Date) => {
+const inMonth = (d: Date): boolean => {
   return d.getMonth() === selectedMonth.value && d.getFullYear() === selectedYear.value;
 }
 
-const sameDay: boolean = (d1: Date, d2: Date) => {
+const sameDay = (d1: Date, d2: Date): boolean => {
   return d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
 }
 
@@ -68,9 +68,9 @@ const incrementMonth = () => {
     <template v-for="week in weeks">
       <div class="grid grid-cols-7">
         <template v-for="dtr in week">
-          <span class="px-1 min-h-16 border dark:border-gray-800 m-[1px]" :class="{ 'text-gray-400': !inMonth(dtr.day) }">
+          <span class="px-1 min-h-16 border dark:border-mygray-800 m-[1px]" :class="{ 'text-gray-400': !inMonth(dtr.day) }">
             <div> {{ dtr.day.getDate() }} </div>
-            <div v-for="record in dtr.timeRecords" class="w-full h-1 mb-1" :style="{ backgroundColor: props.recordAttributes.find(ra => ra.id === record.domain_id).color || '#333' }"> </div>
+            <div v-for="record in dtr.timeRecords" class="w-full h-1 mb-1" :style="{ backgroundColor: props.recordAttributes.find(ra => ra.id === record.domain_id)?.color || '#333' }"> </div>
           </span>
         </template>
       </div>

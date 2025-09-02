@@ -72,16 +72,28 @@ const selectRecordAttribute = (ra: RecordAttribute) => {
   emit('update:modelValue', ra);
 }
 
+const dynamicStyle = computed(() => {
+  const style: { backgroundColor: string; borderColor?: string } = {
+    backgroundColor: backgroundColor.value,
+  };
+
+  if (typeof props.modelValue === 'object' && props.modelValue?.color) {
+    style.borderColor = props.modelValue.color;
+  }
+
+  return style;
+})
+
 </script>
 
 <template>
-  <div class="w-full rounded-md border border-gray-300 dark:border-gray-700"
+  <div class="w-full rounded-md border border-mygray-300 dark:border-mygray-700"
        :class="{ 'ring-2': isInputActive }"
-       :style="{ backgroundColor: backgroundColor, borderColor: modelValue.color ? modelValue.color : '#333' }" >
+       :style="dynamicStyle" >
     <div class="flex items-baseline">
       <input type="text"
              class="p-2 w-full bg-transparent focus:outline-none flex-grow"
-             :class="{ 'opacity-50 cursor-not-allowed text-gray-500': props.disabled}"
+             :class="{ 'opacity-50 cursor-not-allowed text-mygray-500': props.disabled}"
              :placeholder="props.placeholder"
              :value="displayText"
              :disabled="props.disabled"

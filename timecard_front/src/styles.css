@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@import './tailwind-theme.css'
+
 @layer base {
     *, *::before, *::after {
         box-sizing: border-box;
