@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
 import { useRouter } from 'vue-router';
+import api from '@/api/axios';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
@@ -16,19 +16,21 @@ const handleLogin = async() => {
 
   if (!username.value || !password.value) {
     errorMessage.value = 'Please enter both username and password.';
+    return;
   }
   
   try {
-    const response = await axios.post('/api/login', {
+    const response = await api.post('/login', {
       username: username.value,
       password: password.value
     });
 
     console.log(response);
 
-    const token = response.data.access_token;
+    const accessToken = response.data.access_token;
+    const requestToken = response.data.request_token;
 
-    auth.login(token);
+    auth.setTokens(accessToken, requestToken);
     router.push('/')
   } catch (error) {
     console.log(error);

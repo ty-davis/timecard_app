@@ -1,30 +1,34 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 export const useAuthStore = defineStore('auth', () => {
-    const token = ref(localStorage.getItem('jwt'));
+    const accessToken = ref(localStorage.getItem('access_token'));
+    const refreshToken = ref(localStorage.getItem('refresh_token'));
     const router = useRouter();
 
-    const isLoggedIn = computed(() => !!token.value);
+    const isLoggedIn = computed(() => !!accessToken.value);
 
-    const login = (jwt: string) => {
-        token.value = jwt;
-        localStorage.setItem('jwt', jwt);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${jwt}`;
+
+    function setTokens(access: string, refresh: string) {
+        accessToken.value = access;
+        refreshToken.value = refresh;
+        localStorage.setItem('access_token', access);
+        localStorage.setItem('refresh_token', refresh);
+    }
+
+    function setNewAccessToken(access: string) {
+        accessToken.value = access;
+        localStorage.setItem('access_token', access);
     }
 
     const logout = () => {
-        token.value = null;
-        localStorage.removeItem('jwt');
-        delete axios.defaults.headers.common['Authorization'];
+        accessToken.value = null;
+        refreshToken.value = null
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
         router.push('/');
     }
 
-    if (token.value) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
-    }
-
-    return { token, isLoggedIn, login, logout };
+    return { accessToken, refreshToken, isLoggedIn, setTokens, setNewAccessToken, logout };
 })

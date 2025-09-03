@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import axios from 'axios';
+import api from '@/api/axios';
 import type { RecordAttribute } from '@/types';
 
 
@@ -9,14 +9,13 @@ export const useRecordAttributesStore = defineStore('recordattributes', () => {
 
     const getRecordAttributes = async () => {
         try {
-            const response = await axios.get('/api/recordattributes');
+            const response = await api.get('/recordattributes');
             recordAttributes.value = response.data;
         } catch (error: any) {
             console.error('Request failed:', error.response?.data);
             throw error;
         }
     }
-
 
     async function updateRecordAttribute(attributeToUpdate: RecordAttribute) {
         try {
@@ -25,7 +24,7 @@ export const useRecordAttributesStore = defineStore('recordattributes', () => {
             recordAttributes.value[index] = attributeToUpdate;
           }
 
-          await axios.put(`/api/recordattributes/${attributeToUpdate.id}`, attributeToUpdate);
+          await api.put(`/recordattributes/${attributeToUpdate.id}`, attributeToUpdate);
           
         } catch (error) {
           console.error('Failed to update record attribute:', error);

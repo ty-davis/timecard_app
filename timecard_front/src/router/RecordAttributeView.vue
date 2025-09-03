@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import axios from 'axios';
+import api from '@/api/axios';
 import { useAuthStore } from '@/stores/auth';
 import { useRecordAttributesStore } from '@/stores/recordattributes';
 import { useRoute } from 'vue-router';
@@ -38,7 +38,7 @@ const colorSelect = computed({
 
 const getTimeRecords = async () => {
   try {
-    const response = await axios.get('/api/timerecords');
+    const response = await api.get('/timerecords');
     recentRecords.value = response.data;
   } catch (error: any) {
     console.error('Request failed:', error.response?.data);

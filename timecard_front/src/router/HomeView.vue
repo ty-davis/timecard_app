@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
-import axios from 'axios';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
+import api from '@/api/axios';
 import { useRecordAttributesStore } from '@/stores/recordattributes';
 import TimecardForm from '@/components/TimecardForm.vue';
 import Calendar from '@/components/Calendar.vue';
@@ -39,7 +39,7 @@ const newRecord = ref<TimeRecord>({
 
 const getTimeRecords = async () => {
   try {
-    const response = await axios.get('/api/timerecords');
+    const response = await api.get('/timerecords');
     recentRecords.value = response.data;
   } catch (error: any) {
     console.error('Request failed:', error.response?.data);
@@ -55,7 +55,7 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
   try {
     const method = updatedRecord.id ? 'put' : 'post';
     const url = updatedRecord.id ? `/api/timerecords/${updatedRecord.id}` : '/api/timerecords';
-    const response = await axios[method](url, updatedRecord);
+    const response = await api[method](url, updatedRecord);
     
     
     // Refresh the time records to show updated data
@@ -82,7 +82,7 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
 const deleteTimeRecord = async (recordToDelete: TimeRecord) => {
   try {
     console.log("deleting:", recordToDelete);
-    await axios.delete(`/api/timerecords/${recordToDelete.id}`);
+    await api.delete(`/timerecords/${recordToDelete.id}`);
     
     await getTimeRecords();
   } catch (error: any) {

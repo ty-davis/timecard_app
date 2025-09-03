@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
-import axios from 'axios';
+import api from '@/api/axios';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
 import { useRecordAttributesStore } from '@/stores/recordattributes';
@@ -58,7 +58,7 @@ const getTimeRecords = async (start?: Date, end?: Date) => {
   if (end) { params.end_date = end.toISOString(); }
 
   try {
-    const response = await axios.get('/api/timerecords', { params });
+    const response = await api.get('/timerecords', { params });
     recentRecords.value = response.data;
     openRecords.value = response.data.filter((r: TimeRecord) => r.timeout === null);
   } catch (error: any) {
