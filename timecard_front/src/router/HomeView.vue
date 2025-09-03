@@ -51,7 +51,6 @@ const getTimeRecords = async () => {
 }
 
 const handleSaveRecord = async (updatedRecord: TimeRecord) => {
-  console.log(updatedRecord);
   try {
     const method = updatedRecord.id ? 'put' : 'post';
     const url = updatedRecord.id ? `/api/timerecords/${updatedRecord.id}` : '/api/timerecords';
@@ -81,7 +80,6 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
 
 const deleteTimeRecord = async (recordToDelete: TimeRecord) => {
   try {
-    console.log("deleting:", recordToDelete);
     await api.delete(`/timerecords/${recordToDelete.id}`);
     
     await getTimeRecords();

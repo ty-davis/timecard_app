@@ -25,12 +25,11 @@ const handleLogin = async() => {
       password: password.value
     });
 
-    console.log(response);
 
     const accessToken = response.data.access_token;
-    const requestToken = response.data.request_token;
+    const refreshToken = response.data.refresh_token;
 
-    auth.setTokens(accessToken, requestToken);
+    auth.setTokens(accessToken, refreshToken);
     router.push('/')
   } catch (error) {
     console.log(error);

@@ -19,8 +19,6 @@ const recordId = computed(() => parseInt(route.params.id as string, 10));
 
 
 const mainRA = computed(() => {
-  console.log("RAs", recordAttributes.value);
-  console.log(recordAttributes.value.find(ra => ra.id === recordId.value));
   return recordAttributes.value.find(ra => ra.id === recordId.value);
 })
 
