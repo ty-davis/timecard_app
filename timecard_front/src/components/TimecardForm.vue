@@ -189,9 +189,7 @@ const prepTimeRecord = (clockOut: boolean) => {
   if (!localTimein.value) {
     throw new Error('time in is missing.');
   }
-  console.log(localTimein.value);
   const utcDateTimeIn = localTimein.value.toISOString();
-  console.log(utcDateTimeIn);
 
   let utcDateTimeOut = null;
   if (showTimeout.value && localTimeout.value && clockOut) {
