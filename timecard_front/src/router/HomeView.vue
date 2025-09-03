@@ -53,7 +53,7 @@ const getTimeRecords = async () => {
 const handleSaveRecord = async (updatedRecord: TimeRecord) => {
   try {
     const method = updatedRecord.id ? 'put' : 'post';
-    const url = updatedRecord.id ? `/api/timerecords/${updatedRecord.id}` : '/api/timerecords';
+    const url = updatedRecord.id ? `/timerecords/${updatedRecord.id}` : '/timerecords';
     const response = await api[method](url, updatedRecord);
     
     
