@@ -12,9 +12,10 @@
     </div>
     <div v-if="showDetails">
       <div class="flex items-baseline gap-2">
-        <span> {{ titleAttribute?.name}} </span>
+        <span><RouterLink :to="`/record/${record.id}`" class="underline"> {{ titleAttribute?.name}} </RouterLink></span>
         <span> {{ displayDate }}</span>
-        <Button link icon="pi pi-trash" class="p-0 ml-auto" @click="deleteRecord"/>
+        <RouterLink :to="`/record/edit/${record.id}`" class="ml-auto"><Button link icon="pi pi-pen-to-square" class="p-0"/></RouterLink>
+        <Button link icon="pi pi-trash" class="p-0" @click="deleteRecord"/>
       </div>
     </div>
   </div>

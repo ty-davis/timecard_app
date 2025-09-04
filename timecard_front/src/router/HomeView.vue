@@ -2,8 +2,8 @@
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
-import api from '@/api/axios';
 import { useRecordAttributesStore } from '@/stores/recordattributes';
+import { useTimeRecordsStore } from '@/stores/timerecords';
 import TimecardForm from '@/components/TimecardForm.vue';
 import Calendar from '@/components/Calendar.vue';
 import LittleRecord from '@/components/LittleRecord.vue';
@@ -21,11 +21,12 @@ const confirm = useConfirm();
 
 const auth = useAuthStore();
 const recordAttributesStore = useRecordAttributesStore();
+const timeRecordsStore = useTimeRecordsStore();
 const { recordAttributes } = storeToRefs(recordAttributesStore);
+const { timeRecords } = storeToRefs(timeRecordsStore);
 const isFirstLoading = ref(true);
-const recentRecords = ref<TimeRecord[]>([]);
 const openRecords = computed(() => {
-  return recentRecords.value.filter((r: TimeRecord) => r.timeout === null);
+  return timeRecords.value.filter((r: TimeRecord) => r.timeout === null);
 })
 const newRecord = ref<TimeRecord>({
   id: undefined,
@@ -37,29 +38,18 @@ const newRecord = ref<TimeRecord>({
 });
 
 
-const getTimeRecords = async () => {
-  try {
-    const response = await api.get('/timerecords');
-    recentRecords.value = response.data;
-  } catch (error: any) {
-    console.error('Request failed:', error.response?.data);
-
-    if (error.response?.status === 401) {
-      auth.logout();
-    }
-  }
-}
-
 const handleSaveRecord = async (updatedRecord: TimeRecord) => {
   try {
-    const method = updatedRecord.id ? 'put' : 'post';
-    const url = updatedRecord.id ? `/timerecords/${updatedRecord.id}` : '/timerecords';
-    const response = await api[method](url, updatedRecord);
+    if (updatedRecord.id) {
+      timeRecordsStore.updateTimeRecord(updatedRecord);
+    } else {
+      timeRecordsStore.saveTimeRecord(updatedRecord);
+    }
     
     
     // Refresh the time records to show updated data
     await recordAttributesStore.getRecordAttributes();
-    await getTimeRecords();
+    await timeRecordsStore.getTimeRecords(true);
     newRecord.value = {
       id: undefined,
       domain_id: '',
@@ -78,20 +68,6 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
   }
 };
 
-const deleteTimeRecord = async (recordToDelete: TimeRecord) => {
-  try {
-    await api.delete(`/timerecords/${recordToDelete.id}`);
-    
-    await getTimeRecords();
-  } catch (error: any) {
-    console.error('Failed to delete record:', error.response?.data);
-
-    if (error.response?.status === 401) {
-      auth.logout();
-    }
-  }
-}
-
 const deleteConfirm = (record: TimeRecord) => {
   confirm.require({
     message: 'Do you want to delete this record?',
@@ -99,7 +75,13 @@ const deleteConfirm = (record: TimeRecord) => {
     icon: 'pi pi-info-circle',
     acceptClass: 'p-button-danger',
     accept: () => {
-      deleteTimeRecord(record);
+      try {
+        timeRecordsStore.deleteTimeRecord(record);
+      } catch (error: any) {
+        if (error.response?.status === 401) {
+          auth.logout();
+        }
+      }
     }
   })
 }
@@ -123,7 +105,7 @@ onMounted(async () => {
   if (auth.isLoggedIn) {
     try {
       await recordAttributesStore.getRecordAttributes();
-      await getTimeRecords();
+      await timeRecordsStore.getTimeRecords();
       isFirstLoading.value = false;
     } catch (error: any) {
       if (error.response?.status === 401) {
@@ -152,7 +134,7 @@ onMounted(async () => {
               :recordAttributes="recordAttributes"
               :timeRecord="openRecord"
               @save-record="handleSaveRecord"
-              @delete-record="deleteTimeRecord"
+              @delete-record="timeRecordsStore.deleteTimeRecord"
             />
           </template>
         </div>
@@ -166,12 +148,12 @@ onMounted(async () => {
           </TabList>
           <TabPanels>
             <TabPanel value="0">
-              <template v-for="record in recentRecords.sort((a, b) => new Date(b.timein).getTime() - new Date(a.timein).getTime())">
+              <template v-for="record in timeRecords.sort((a, b) => new Date(b.timein).getTime() - new Date(a.timein).getTime())">
                 <LittleRecord :record="record" :recordAttributes="recordAttributes" @delete-record="deleteConfirm(record)"/>
               </template>
             </TabPanel>
             <TabPanel value="1">
-              <Calendar :records="recentRecords" :recordAttributes="recordAttributes">
+              <Calendar :records="timeRecords" :recordAttributes="recordAttributes">
               </Calendar>
             </TabPanel>
           </TabPanels>
@@ -190,8 +172,3 @@ onMounted(async () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-</style>
-<style>
-</style>

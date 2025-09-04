@@ -34,19 +34,6 @@ const colorSelect = computed({
 });
 
 
-const getTimeRecords = async () => {
-  try {
-    const response = await api.get('/timerecords');
-    recentRecords.value = response.data;
-  } catch (error: any) {
-    console.error('Request failed:', error.response?.data);
-
-    if (error.response?.status === 401) {
-      auth.logout();
-    }
-  }
-}
-
 onMounted(async () => {
   if (auth.isLoggedIn) {
     if (!recordAttributes.value?.length) {

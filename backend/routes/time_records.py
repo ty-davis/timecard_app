@@ -20,14 +20,14 @@ def get_time_records():
 
     if start_date_str:
         try:
-            start_date = datetime.strptime(start_date_str, DATE_FORMAT).date()
+            start_date = datetime.strptime(start_date_str, DATE_FORMAT)
             query = query.filter(TimeRecord.timein >= start_date)
         except ValueError:
             return jsonify({"msg": "Invalid start date format. Use YYYY-MM-DDTHH:MM:SS.sssZ"}), 400
 
     if end_date_str:
         try:
-            end_date = datetime.strptime(end_date_str, DATE_FORMAT).date()
+            end_date = datetime.strptime(end_date_str, DATE_FORMAT)
             query = query.filter(TimeRecord.timein < end_date)
         except ValueError:
             return jsonify({"msg": "Invalid end date format. Use YYYY-MM-DDTHH:MM:SS.sssZ"}), 400

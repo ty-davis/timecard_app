@@ -1,0 +1,3 @@
+<template>
+  Record view
+</template>

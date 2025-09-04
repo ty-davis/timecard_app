@@ -4,6 +4,7 @@ import api from '@/api/axios';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
 import { useRecordAttributesStore } from '@/stores/recordattributes';
+import { useTimeRecordsStore } from '@/stores/timerecords';
 import { showTime, timeDiff } from '@/utils/timeUtils';
 import SummaryCard from '@/components/SummaryCard.vue';
 
@@ -11,9 +12,12 @@ import type { TimeRecord, RecordAttribute, SummaryData } from '@/types';
 
 const auth = useAuthStore();
 const isFirstLoading = ref(true);
-const recentRecords = ref<TimeRecord[]>([]);
-const openRecords = ref<TimeRecord[]>([]);
 const recordAttributesStore = useRecordAttributesStore();
+const timeRecordsStore = useTimeRecordsStore();
+const { timeRecords, filteredRecords } = storeToRefs(timeRecordsStore);
+const openRecords = computed(() => {
+  return filteredRecords.value.filter((r: TimeRecord) => r.timeout === null);
+})
 const { recordAttributes } = storeToRefs(recordAttributesStore);
 const today = computed(() => {
   const d = new Date();
@@ -22,7 +26,7 @@ const today = computed(() => {
 
 const mainData = computed(() => {
   const d: Record<string | number, SummaryData> = {};
-  for (let record of recentRecords.value) {
+  for (let record of filteredRecords.value) {
     if (!d[record.domain_id]) {
       d[record.domain_id] = {
         domainId: record.domain_id,
@@ -52,29 +56,11 @@ const maxTime = computed(() => {
   return mainData.value[0].totalTime;
 })
 
-const getTimeRecords = async (start?: Date, end?: Date) => {
-  const params: { start_date?: string, end_date?: string } = {};
-  if (start) { params.start_date = start.toISOString(); }
-  if (end) { params.end_date = end.toISOString(); }
-
-  try {
-    const response = await api.get('/timerecords', { params });
-    recentRecords.value = response.data;
-    openRecords.value = response.data.filter((r: TimeRecord) => r.timeout === null);
-  } catch (error: any) {
-    console.error('Request failed:', error.response?.data);
-
-    if (error.response?.status === 401) {
-      auth.logout();
-    }
-  }
-}
-
 onMounted(async () => {
   if (auth.isLoggedIn) {
     try {
       await recordAttributesStore.getRecordAttributes();
-      await getTimeRecords(new Date(today.value.getTime() - (14 * 24 * 60 * 60 * 1000)));
+      await timeRecordsStore.getTimeRecords();
       isFirstLoading.value = false;
     } catch (error: any) {
       if (error.response?.status === 401) {
