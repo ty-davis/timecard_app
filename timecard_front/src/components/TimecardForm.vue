@@ -40,29 +40,38 @@
         </div>
       </div>
 
-      <div v-if="timeRecord.id">
+      <div v-if="timeRecord.id && !timeRecord.timeout">
         <div class="flex space-x-4">
           <Checkbox v-model="showTimeout" binary />
           <span>
             Choose clock out time
           </span>
         </div>
-        <div v-if="showTimeout" class="p-field flex-1 flex flex-col gap-2">
-          <label for="timeout">Out:</label>
-          <DatePicker v-model="localTimeout" showTime hourFormat="12" fluid/>
-        </div>
+      </div>
+
+      <div v-if="showTimeout || timeRecord.timeout" class="p-field flex-1 flex flex-col gap-2">
+        <label for="timeout">Out:</label>
+        <DatePicker v-model="localTimeout" showTime hourFormat="12" fluid/>
       </div>
 
       <div class="flex gap-2 flex-wrap">
-        <Button 
-          type="submit" 
-          :label="`Clock ${record.id ? 'Out' : 'In'}`" 
-          icon="pi pi-check"
-          :disabled="!readyToSubmit"
-          class="p-button-success p-button-lg grow-3"
-        />
+        <template v-if="!timeRecord.timeout">
+          <Button 
+            type="submit" 
+            :label="`Clock ${record.id ? 'Out' : 'In'}`" 
+            icon="pi pi-check"
+            :disabled="!readyToSubmit"
+            class="p-button-success p-button-lg grow-3"
+          />
+        </template>
       </div>
       <div class="flex gap-2 flex-wrap">
+        <Button
+          v-if="timeRecord.id && record.timeout"
+          label="Cancel"
+          class="p-button-lg p-button-secondary grow"
+          @click="router.push(`/record/${record.id}`)"
+        />
         <Button
           v-if="timeRecord.id"
           label="Save Changes"
@@ -74,7 +83,7 @@
           v-if="timeRecord.id"
           label="Delete record"
           icon="pi pi-trash"
-          class="p-button-danger grow"
+          class="p-button-danger p-button-lg grow"
           @click="deleteConfirm()"
         />
       </div>
@@ -89,7 +98,10 @@ import type { RecordAttribute, TimeRecord } from '@/types';
 import { toLocalDateTimeString } from '@/utils/timeUtils';
 import TextSelect from '@/components/TextSelect.vue';
 import { useConfirm } from 'primevue/useconfirm';
+import { useRouter } from 'vue-router';
 
+const confirm = useConfirm();
+const router = useRouter();
 
 const props = defineProps<{
   timeRecord: TimeRecord;
@@ -158,6 +170,9 @@ watch(() => props.timeRecord, async (newRecord) => {
     }
 
     localTimein.value = new Date(props.timeRecord.timein);
+    if (props.timeRecord.timeout) {
+      localTimeout.value = new Date(props.timeRecord.timeout);
+    }
 
     await nextTick();
     isPopulating.value = false;
@@ -192,7 +207,7 @@ const prepTimeRecord = (clockOut: boolean) => {
   const utcDateTimeIn = localTimein.value.toISOString();
 
   let utcDateTimeOut = null;
-  if (showTimeout.value && localTimeout.value && clockOut) {
+  if ((showTimeout.value || record.timeout) && localTimeout.value && clockOut) {
     utcDateTimeOut = localTimeout.value.toISOString();
   } else if (clockOut) {
     utcDateTimeOut = new Date().toISOString();
@@ -223,7 +238,7 @@ const prepTimeRecord = (clockOut: boolean) => {
 }
 
 const saveChanges = () => {
-  prepTimeRecord(false);
+  prepTimeRecord(false || !!record.timeout);
   emit('save-record', record);
 }
 
@@ -238,7 +253,6 @@ const deleteTimeRecord = () => {
 }
 
 
-const confirm = useConfirm();
 
 const deleteConfirm = () => {
   confirm.require({

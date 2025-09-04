@@ -41,9 +41,9 @@ const newRecord = ref<TimeRecord>({
 const handleSaveRecord = async (updatedRecord: TimeRecord) => {
   try {
     if (updatedRecord.id) {
-      timeRecordsStore.updateTimeRecord(updatedRecord);
+      await timeRecordsStore.updateTimeRecord(updatedRecord);
     } else {
-      timeRecordsStore.saveTimeRecord(updatedRecord);
+      await timeRecordsStore.saveTimeRecord(updatedRecord);
     }
     
     

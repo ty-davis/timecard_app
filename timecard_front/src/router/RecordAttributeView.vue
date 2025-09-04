@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import api from '@/api/axios';
 import { useAuthStore } from '@/stores/auth';
 import { useRecordAttributesStore } from '@/stores/recordattributes';
 import { useRoute } from 'vue-router';

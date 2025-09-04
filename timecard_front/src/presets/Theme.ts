@@ -5,33 +5,34 @@ import { colors } from '@/config/colors';
 const TheTheme = definePreset(Aura, {
     semantic: {
         primary: colors.primary,
+        mygray: colors.mygray,
         colorScheme: {
             light: {
                 primary: {
-                color: '{primary.950}',
-                contrastColor: '#ffffff',
-                hoverColor: '{primary.900}',
-                activeColor: '{primary.800}'
+                    color: '{mygray.950}',
+                    contrastColor: '#ffffff',
+                    hoverColor: '{mygray.900}',
+                    activeColor: '{mygray.800}'
                 },
                 highlight: {
-                background: '{primary.950}',
-                focusBackground: '{primary.700}',
-                color: '#ffffff',
-                focusColor: '#ffffff'
+                    background: '{mygray.950}',
+                    focusBackground: '{mygray.700}',
+                    color: '#ffffff',
+                    focusColor: '#ffffff'
                 },
             },
             dark: {
                 primary: {
-                color: '{primary.50}',
-                contrastColor: '{primary.950}',
-                hoverColor: '{primary.100}',
-                activeColor: '{primary.200}'
+                    color: '{mygray.50}',
+                    contrastColor: '{mygray.950}',
+                    hoverColor: '{mygray.100}',
+                    activeColor: '{mygray.200}'
                 },
                 highlight: {
-                background: '{primary.50}',
-                focusBackground: '{primary.300}',
-                color: '{primary.950}',
-                focusColor: '{primary.950}'
+                    background: '{mygray.50}',
+                    focusBackground: '{mygray.300}',
+                    color: '{mygray.950}',
+                    focusColor: '{mygray.950}'
                 }
             }
         }

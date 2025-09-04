@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
-import api from '@/api/axios';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
 import { useRecordAttributesStore } from '@/stores/recordattributes';

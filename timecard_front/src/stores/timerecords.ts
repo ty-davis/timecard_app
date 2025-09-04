@@ -88,6 +88,8 @@ export const useTimeRecordsStore = defineStore('timerecords', () => {
 
     return {
         timeRecords,
+        start,
+        end,
         filteredRecords,
         getTimeRecords,
         saveTimeRecord,
