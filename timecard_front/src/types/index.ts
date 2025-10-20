@@ -15,6 +15,8 @@ export interface TimeRecord {
   title_id: number | string
   timein: string | Date
   timeout: string | Date | null
+  external_link: string | null
+  notes: string | null
 }
 
 export type CategoryRecord = {

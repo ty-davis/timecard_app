@@ -34,7 +34,9 @@ const newRecord = ref<TimeRecord>({
   category_id: '',
   title_id: '',
   timein: new Date(),
-  timeout: null
+  timeout: null,
+  external_link: '',
+  notes: '',
 });
 
 
@@ -56,7 +58,9 @@ const handleSaveRecord = async (updatedRecord: TimeRecord) => {
       category_id: '',
       title_id: '',
       timein: new Date(),
-      timeout: null
+      timeout: null,
+      external_link: '',
+      notes: '',
     };
     
   } catch (error: any) {
@@ -92,6 +96,8 @@ const populateNewRecordInfo = () => {
   newRecord.value.title_id = '';
 
   newRecord.value.timein = toLocalDateTimeString(new Date());
+  newRecord.value.external_link = '';
+  newRecord.value.notes = '';
 }
 
 watch(recordAttributes, async (newVal) => {

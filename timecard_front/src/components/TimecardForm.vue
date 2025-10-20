@@ -33,6 +33,10 @@
         />
       </div>
 
+      <div>
+        <InputText type="text" id="externalLink" v-model="externalLink" placeholder="obsidian://..." required style="width: 100%;"/>
+      </div>
+
       <div class="flex space-x-4">
         <div class="p-field flex-1 flex flex-col gap-2">
           <label for="timein">In:</label>
@@ -121,6 +125,8 @@ const selectedDomain = ref<RecordAttribute | string>('');
 const selectedCategory = ref<RecordAttribute | string>('');
 const selectedTitle = ref<RecordAttribute | string>('');
 
+const externalLink = ref<string>('');
+
 const isPopulating = ref(true);
 
 const readyToSubmit = computed(() => {
@@ -173,6 +179,8 @@ watch(() => props.timeRecord, async (newRecord) => {
     if (props.timeRecord.timeout) {
       localTimeout.value = new Date(props.timeRecord.timeout);
     }
+
+    externalLink.value = props.timeRecord.external_link || '';
 
     await nextTick();
     isPopulating.value = false;
@@ -234,6 +242,8 @@ const prepTimeRecord = (clockOut: boolean) => {
 
   record.timein = utcDateTimeIn;
   record.timeout = utcDateTimeOut;
+
+  record.external_link = externalLink.value;
 
 }
 

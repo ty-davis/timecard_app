@@ -90,6 +90,8 @@ const titleStyle = computed(() => {
         <span :style="titleStyle" class="p-1"> {{ titleRA?.name }}</span>
       </div>
 
+      <a :href="`${ record?.external_link }`" class="text-blue-500 hover:underline">External Link</a>
+
       <div>
         <div>
           {{ timein.toLocaleDateString() }}

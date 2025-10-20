@@ -95,7 +95,9 @@ def create_time_record():
         domain_id = data['domain_id'],
         category_id = data['category_id'],
         title_id = data['title_id'],
-        timein = timein
+        timein = timein,
+        external_link = data['external_link'],
+        notes = data['notes'],
     )
 
     db.session.add(new_record)
@@ -151,6 +153,11 @@ def update_time_record(record_id):
             return jsonify({"msg": "Invalid timeout format."}), 400
     else:
         record.timeout = None
+
+    if 'external_link' in data and data['external_link']:
+        record.external_link = data['external_link']
+    if 'notes' in data and data['notes']:
+        record.notes = data['notes']
 
     db.session.commit()
 
