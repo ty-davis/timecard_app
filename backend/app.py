@@ -1,7 +1,8 @@
 from flask import Flask
 from flask_cors import CORS
 from config import Config
-from database import db, jwt
+from database import db, jwt, migrate
+import click
 
 def create_app():
     app = Flask(__name__)
@@ -10,6 +11,7 @@ def create_app():
     CORS(app)
     db.init_app(app)
     jwt.init_app(app)
+    migrate.init_app(app, db)
 
     with app.app_context():
         from sqlalchemy import event
@@ -35,6 +37,20 @@ def create_app():
             db.drop_all()
             db.create_all()
             print("Database tables created successfully!")
+
+
+    @app.cli.command("reset-password")
+    @click.argument("username")
+    @click.argument("password")
+    def reset_password(username, password):
+        """Resets a user's password."""
+        user = User.query.filter_by(username=username).first()
+        if user:
+            user.set_password(password)
+            db.session.commit()
+            print(f"Password for user '{username}' has been reset.")
+        else:
+            print(f"User '{username}' not found.")
 
     return app
 

@@ -31,6 +31,8 @@ class TimeRecord(db.Model):
     title_id = db.Column(db.Integer, db.ForeignKey('record_attribute.id'), nullable=False)
     timein = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     timeout = db.Column(db.DateTime, nullable=True)
+    external_link = db.Column(db.String(255), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
 
     domain = db.relationship('RecordAttribute', foreign_keys=[domain_id])
     category = db.relationship('RecordAttribute', foreign_keys=[category_id])
@@ -44,6 +46,8 @@ class TimeRecord(db.Model):
             'title_id': self.title_id,
             'timein': self.timein.strftime('%Y-%m-%dT%H:%M:%SZ') if self.timein else None,
             'timeout': self.timeout.strftime('%Y-%m-%dT%H:%M:%SZ') if self.timeout else None,
+            'external_link': self.external_link,
+            'notes': self.notes,
         }
 
     def __str__(self):
