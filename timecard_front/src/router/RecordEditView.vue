@@ -18,7 +18,9 @@ const defaultTimeRecord: TimeRecord = {
   category_id: '',
   title_id: '',
   timein: new Date(),
-  timeout: null
+  timeout: null,
+  external_link: '',
+  notes: '',
 }
 
 const recordAttributesStore = useRecordAttributesStore();
