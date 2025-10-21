@@ -34,7 +34,7 @@
       </div>
 
       <div>
-        <InputText type="text" id="externalLink" v-model="externalLink" placeholder="obsidian://..." required style="width: 100%;"/>
+        <InputText type="text" id="externalLink" v-model="externalLink" placeholder="obsidian://..." style="width: 100%;"/>
       </div>
 
       <div class="flex space-x-4">
