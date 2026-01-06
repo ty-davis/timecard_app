@@ -293,7 +293,7 @@ const goToClock = () => {
     query: {
       domain: domainId,
       category: categoryId,
-      timein: props.timeRecord.timein
+      timein: props.timeRecord.timein?.toString()
     }
   }).href;
   
