@@ -1,5 +1,13 @@
 <template>
   <div class="">
+    <div v-if="timeRecord.id && !timeRecord.timeout" class="flex justify-end mb-3">
+      <Button
+        icon="pi pi-clock"
+        class="p-button-rounded p-button-text"
+        @click="goToClock"
+        v-tooltip.left="'View Clock'"
+      />
+    </div>
     <form @submit.prevent="submitTimeRecord" class="flex flex-col gap-4">
       <div>
         <TextSelect
@@ -274,6 +282,31 @@ const deleteConfirm = () => {
       deleteTimeRecord();      
     }
   });
+};
+
+const goToClock = () => {
+  const domainId = typeof selectedDomain.value === 'object' ? selectedDomain.value.id : null;
+  const categoryId = typeof selectedCategory.value === 'object' ? selectedCategory.value.id : null;
+  
+  const clockUrl = router.resolve({
+    path: '/clock',
+    query: {
+      domain: domainId,
+      category: categoryId,
+      timein: props.timeRecord.timein
+    }
+  }).href;
+  
+  const width = 500;
+  const height = 300;
+  const left = (screen.width - width) / 2;
+  const top = (screen.height - height) / 2;
+  
+  window.open(
+    clockUrl,
+    'clockWindow',
+    `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,scrollbars=no,resizable=yes`
+  );
 };
 
 

@@ -8,6 +8,7 @@ import ReportView from './ReportView.vue';
 import RecordAttributeView from './RecordAttributeView.vue';
 import RecordView from './RecordView.vue';
 import RecordEditView from './RecordEditView.vue';
+import ClockView from './ClockView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,7 @@ const router = createRouter({
     { path: '/info/:id', component: RecordAttributeView},
     { path: '/record/:id', component: RecordView},
     { path: '/record/edit/:id', component: RecordEditView},
+    { path: '/clock', component: ClockView},
   ],
 })
 
