@@ -39,6 +39,13 @@ class OverlayTimer(QWidget):
         content_layout.setContentsMargins(15, 15, 15, 15)
         content_layout.setSpacing(1)
 
+        self.color_bar = QLabel()
+        self.color_bar.setFixedHeight(3)
+        self.color_bar.setStyleSheet("""
+            background-color: #aaaaaa;
+            border-radius: 2px;
+        """)
+
         self.time_label = QLabel()
         self.time_label.setStyleSheet("""
             color: #aaaaaa;
@@ -58,6 +65,7 @@ class OverlayTimer(QWidget):
         """)
         self.info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        content_layout.addWidget(self.color_bar)
         content_layout.addWidget(self.time_label)
         content_layout.addWidget(self.info_label)
         container.setLayout(content_layout)
@@ -91,7 +99,16 @@ class OverlayTimer(QWidget):
     def update_info(self):
         domain = self.record.get('domain_name', 'Unknown')
         category = self.record.get('category_name', 'Unknown')
+        domain_color = self.record.get('domain_color', '#aaaaaa')
+        
+        if not domain_color or domain_color == 'null':
+            domain_color = '#aaaaaa'
+        
         self.info_label.setText(f"{domain} - {category}")
+        self.color_bar.setStyleSheet(f"""
+            background-color: {domain_color};
+            border-radius: 2px;
+        """)
 
     def format_elapsed(self, seconds):
         hours = int(seconds // 3600)
@@ -283,7 +300,7 @@ class TimecardClient(QMainWindow):
             attrs_response = requests.get(f"{self.api_base}/recordattributes", headers=headers)
             if attrs_response.status_code == 200:
                 attributes = attrs_response.json()
-                self.attributes_cache = {attr['id']: attr['name'] for attr in attributes}
+                self.attributes_cache = {attr['id']: attr for attr in attributes}
 
             response = requests.get(f"{self.api_base}/timerecords", headers=headers)
 
@@ -292,8 +309,13 @@ class TimecardClient(QMainWindow):
                 self.open_records = []
                 for r in records:
                     if r.get('timeout') is None:
-                        r['domain_name'] = self.attributes_cache.get(r.get('domain_id'), 'Unknown')
-                        r['category_name'] = self.attributes_cache.get(r.get('category_id'), 'Unknown')
+                        domain_attr = self.attributes_cache.get(r.get('domain_id'), {})
+                        category_attr = self.attributes_cache.get(r.get('category_id'), {})
+                        
+                        r['domain_name'] = domain_attr.get('name', 'Unknown') if isinstance(domain_attr, dict) else 'Unknown'
+                        r['category_name'] = category_attr.get('name', 'Unknown') if isinstance(category_attr, dict) else 'Unknown'
+                        r['domain_color'] = domain_attr.get('color') if isinstance(domain_attr, dict) else None
+                        
                         self.open_records.append(r)
                 self.display_records()
             elif response.status_code == 401:
