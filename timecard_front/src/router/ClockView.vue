@@ -34,7 +34,7 @@ const router = useRouter();
 const recordAttributesStore = useRecordAttributesStore();
 const { recordAttributes } = storeToRefs(recordAttributesStore);
 
-const elapsedTime = ref('00:00:00');
+const elapsedTime = ref('00:00');
 let intervalId: number | null = null;
 
 const domainId = computed(() => route.query.domain ? Number(route.query.domain) : null);
@@ -62,7 +62,7 @@ const categoryName = computed(() => {
 
 const updateTime = () => {
   if (!clockInTime.value) {
-    elapsedTime.value = '00:00:00';
+    elapsedTime.value = '00:00';
     return;
   }
   
@@ -73,8 +73,8 @@ const updateTime = () => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  
-  elapsedTime.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  const hrs = `${hours ? hours.toString().padStart(2, '0') + ':' : ''}`;
+  elapsedTime.value = `${hrs}${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
 onMounted(async () => {
