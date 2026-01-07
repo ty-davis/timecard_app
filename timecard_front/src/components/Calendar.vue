@@ -22,7 +22,7 @@ const weeks = computed(() => {
   d.setDate(d.getDate() - dayOfWeek);
 
   const weeks: DayTimeRecords[][] = [];
-  while (d.getMonth() <= selectedMonth.value && d.getFullYear() === selectedYear.value) {
+  while (d.getMonth() === selectedMonth.value || (weeks.length > 0 && weeks[weeks.length - 1].some(day => inMonth(day.day)))) {
     const days: DayTimeRecords[] = [];
     for (let i = 0; i < 7; i++) {
       const dtr: DayTimeRecords = {
