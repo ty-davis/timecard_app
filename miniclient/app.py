@@ -18,50 +18,65 @@ class OverlayTimer(QWidget):
         super().__init__()
         self.record = record
         self.parent_window = parent_window
-        
+        self.dragging = False
+        self.drag_position = None
+
         flags = (Qt.WindowType.FramelessWindowHint | 
                 Qt.WindowType.WindowStaysOnTopHint | 
                 Qt.WindowType.Tool)
         self.setWindowFlags(flags)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        
-        layout = QVBoxLayout()
-        layout.setContentsMargins(20, 20, 20, 20)
-        
-        self.time_label = QLabel()
-        self.time_label.setStyleSheet("""
-            color: #00FF00;
-            font-size: 50px;
-            font-weight: bold;
-            background-color: rgba(0, 0, 0, 180);
-            padding: 10px;
+
+        # Container widget with background
+        container = QWidget()
+        container.setStyleSheet("""
+            background-color: rgba(0, 0, 0, 100);
             border-radius: 5px;
         """)
+
+        # Layout for time and info labels
+        content_layout = QVBoxLayout()
+        content_layout.setContentsMargins(15, 15, 15, 15)
+        content_layout.setSpacing(1)
+
+        self.time_label = QLabel()
+        self.time_label.setStyleSheet("""
+            color: #aaaaaa;
+            font-size: 35px;
+            font-weight: bold;
+            background-color: transparent;
+            padding: 0px;
+        """)
         self.time_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
+
         self.info_label = QLabel()
         self.info_label.setStyleSheet("""
             color: #FFFFFF;
             font-size: 16px;
-            background-color: rgba(0, 0, 0, 180);
-            padding: 10px;
-            border-radius: 5px;
+            background-color: transparent;
+            padding: 0px;
         """)
         self.info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        layout.addWidget(self.time_label)
-        layout.addWidget(self.info_label)
-        self.setLayout(layout)
-        
+
+        content_layout.addWidget(self.time_label)
+        content_layout.addWidget(self.info_label)
+        container.setLayout(content_layout)
+
+        # Main layout
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.addWidget(container)
+        self.setLayout(main_layout)
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_time)
         self.timer.start(1000)
-        
-        self.resize(400, 200)
-        self.move(100, 100)
+
+        self.resize(200, 100)
+        self.move(0, 0)
         self.update_time()
         self.update_info()
-        
+
     def update_time(self):
         timein_str = self.record.get('timein')
         if timein_str:
@@ -72,101 +87,114 @@ class OverlayTimer(QWidget):
                 self.time_label.setText(elapsed_str)
             except Exception as e:
                 print(f"Error updating time: {e}")
-    
+
     def update_info(self):
         domain = self.record.get('domain_name', 'Unknown')
         category = self.record.get('category_name', 'Unknown')
         self.info_label.setText(f"{domain} - {category}")
-    
+
     def format_elapsed(self, seconds):
         hours = int(seconds // 3600)
         minutes = int((seconds % 3600) // 60)
         secs = int(seconds % 60)
-        
+
         if hours > 0:
             return f"{hours:02d}:{minutes:02d}:{secs:02d}"
         else:
             return f"{minutes:02d}:{secs:02d}"
-    
+
     def mousePressEvent(self, event):
         if (event.modifiers() == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier)):
             self.close()
             self.parent_window.show()
             self.parent_window.load_records()
+        elif event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            self.dragging = True
+            self.drag_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if self.dragging and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            self.move(event.globalPosition().toPoint() - self.drag_position)
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        self.dragging = False
+        event.accept()
 
 class TimecardClient(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Timecard Client")
         self.setGeometry(100, 100, 600, 500)
-        
+
         self.api_base = os.getenv('API_BASE_URL', 'http://localhost:5000/api')
         self.config_file = Path.home() / ".timecard_client.json"
         self.access_token = None
         self.refresh_token = None
         self.attributes_cache = {}
-        
+
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
-        
+
         self.login_widget = self.create_login_widget()
         self.records_widget = self.create_records_widget()
-        
+
         self.stacked_widget.addWidget(self.login_widget)
         self.stacked_widget.addWidget(self.records_widget)
-        
+
         self.load_credentials()
-        
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_elapsed_times)
         self.timer.start(1000)
-        
+
     def create_login_widget(self):
         widget = QWidget()
         layout = QVBoxLayout()
-        
+
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText("Username")
-        
+
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Password")
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
         self.password_input.returnPressed.connect(self.login)
-        
+
         login_btn = QPushButton("Login")
         login_btn.clicked.connect(self.login)
-        
+
         layout.addWidget(QLabel("Timecard Login"))
         layout.addWidget(self.username_input)
         layout.addWidget(self.password_input)
         layout.addWidget(login_btn)
         layout.addStretch()
-        
+
         widget.setLayout(layout)
         return widget
-    
+
     def create_records_widget(self):
         widget = QWidget()
         layout = QVBoxLayout()
-        
+
         self.status_label = QLabel("Open Timecard Records")
         self.records_list = QListWidget()
         self.records_list.itemClicked.connect(self.on_record_clicked)
-        
+
         refresh_btn = QPushButton("Refresh")
         refresh_btn.clicked.connect(self.load_records)
-        
+
         logout_btn = QPushButton("Logout")
         logout_btn.clicked.connect(self.logout)
-        
+
         layout.addWidget(self.status_label)
         layout.addWidget(self.records_list)
         layout.addWidget(refresh_btn)
         layout.addWidget(logout_btn)
-        
+
         widget.setLayout(layout)
         return widget
-    
+
     def load_credentials(self):
         if self.config_file.exists():
             try:
@@ -182,7 +210,7 @@ class TimecardClient(QMainWindow):
                             self.attempt_refresh()
             except Exception as e:
                 print(f"Error loading credentials: {e}")
-    
+
     def save_credentials(self):
         try:
             with open(self.config_file, 'w') as f:
@@ -192,7 +220,7 @@ class TimecardClient(QMainWindow):
                 }, f)
         except Exception as e:
             print(f"Error saving credentials: {e}")
-    
+
     def verify_token(self):
         try:
             headers = {'Authorization': f'Bearer {self.access_token}'}
@@ -200,7 +228,7 @@ class TimecardClient(QMainWindow):
             return response.status_code == 200
         except:
             return False
-    
+
     def attempt_refresh(self):
         try:
             headers = {'Authorization': f'Bearer {self.refresh_token}'}
@@ -216,11 +244,11 @@ class TimecardClient(QMainWindow):
                 self.refresh_token = None
         except Exception as e:
             print(f"Error refreshing token: {e}")
-    
+
     def login(self):
         username = self.username_input.text()
         password = self.password_input.text()
-        
+
         try:
             response = requests.post(f"{self.api_base}/login", 
                                      json={'username': username, 'password': password})
@@ -236,7 +264,7 @@ class TimecardClient(QMainWindow):
                 QMessageBox.warning(self, "Login Failed", "Invalid username or password")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Connection error: {e}")
-    
+
     def logout(self):
         self.access_token = None
         self.refresh_token = None
@@ -244,21 +272,21 @@ class TimecardClient(QMainWindow):
             self.config_file.unlink()
         self.records_list.clear()
         self.stacked_widget.setCurrentIndex(0)
-    
+
     def load_records(self):
         if not self.access_token:
             return
-        
+
         try:
             headers = {'Authorization': f'Bearer {self.access_token}'}
-            
+
             attrs_response = requests.get(f"{self.api_base}/recordattributes", headers=headers)
             if attrs_response.status_code == 200:
                 attributes = attrs_response.json()
                 self.attributes_cache = {attr['id']: attr['name'] for attr in attributes}
-            
+
             response = requests.get(f"{self.api_base}/timerecords", headers=headers)
-            
+
             if response.status_code == 200:
                 records = response.json()
                 self.open_records = []
@@ -274,12 +302,12 @@ class TimecardClient(QMainWindow):
                 QMessageBox.warning(self, "Error", f"Failed to load records: {response.status_code}")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Connection error: {e}")
-    
+
     def display_records(self):
         self.records_list.clear()
         for record in self.open_records:
             self.add_record_item(record)
-    
+
     def add_record_item(self, record):
         timein_str = record.get('timein')
         if timein_str:
@@ -287,51 +315,51 @@ class TimecardClient(QMainWindow):
                 timein = datetime.strptime(timein_str, '%Y-%m-%dT%H:%M:%SZ')
                 elapsed = datetime.utcnow() - timein
                 elapsed_str = self.format_elapsed(elapsed.total_seconds())
-                
+
                 domain = record.get('domain_name', 'Unknown')
                 category = record.get('category_name', 'Unknown')
                 item_text = f"{domain} - {category} | {elapsed_str}"
-                
+
                 item = QListWidgetItem(item_text)
                 item.setData(Qt.ItemDataRole.UserRole, record)
                 self.records_list.addItem(item)
             except Exception as e:
                 print(f"Error parsing time: {e}")
-    
+
     def update_elapsed_times(self):
         if not hasattr(self, 'open_records') or not self.open_records:
             return
-        
+
         for i in range(self.records_list.count()):
             item = self.records_list.item(i)
             record = item.data(Qt.ItemDataRole.UserRole)
-            
+
             timein_str = record.get('timein')
             if timein_str:
                 try:
                     timein = datetime.strptime(timein_str, '%Y-%m-%dT%H:%M:%SZ')
                     elapsed = datetime.utcnow() - timein
                     elapsed_str = self.format_elapsed(elapsed.total_seconds())
-                    
+
                     domain = record.get('domain_name', 'Unknown')
                     category = record.get('category_name', 'Unknown')
                     item_text = f"{domain} - {category} | {elapsed_str}"
                     item.setText(item_text)
                 except Exception as e:
                     print(f"Error updating time: {e}")
-    
+
     def on_record_clicked(self, item):
         record = item.data(Qt.ItemDataRole.UserRole)
         if record:
             self.hide()
             self.overlay = OverlayTimer(record, self)
             self.overlay.show()
-    
+
     def format_elapsed(self, seconds):
         hours = int(seconds // 3600)
         minutes = int((seconds % 3600) // 60)
         secs = int(seconds % 60)
-        
+
         if hours > 0:
             return f"{hours:02d}:{minutes:02d}:{secs:02d}"
         else:
