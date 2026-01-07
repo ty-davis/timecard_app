@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                               QLineEdit, QPushButton, QListWidget, QLabel, 
                               QStackedWidget, QMessageBox, QListWidgetItem)
-from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtCore import QTimer, Qt, QPoint
 from PyQt6.QtGui import QFont
 
 load_dotenv()
@@ -81,7 +81,11 @@ class OverlayTimer(QWidget):
         self.timer.start(1000)
 
         self.resize(200, 100)
-        self.move(0, 0)
+        saved_pos = self.parent_window.get_overlay_position()
+        if saved_pos:
+            self.move(saved_pos)
+        else:
+            self.move(0, 0)
         self.update_time()
         self.update_info()
 
@@ -136,6 +140,8 @@ class OverlayTimer(QWidget):
             event.accept()
 
     def mouseReleaseEvent(self, event):
+        if self.dragging:
+            self.parent_window.save_overlay_position(self.pos())
         self.dragging = False
         event.accept()
 
@@ -219,6 +225,7 @@ class TimecardClient(QMainWindow):
                     data = json.load(f)
                     self.access_token = data.get('access_token')
                     self.refresh_token = data.get('refresh_token')
+                    self.overlay_position = data.get('overlay_position')
                     if self.access_token:
                         if self.verify_token():
                             self.stacked_widget.setCurrentIndex(1)
@@ -227,14 +234,19 @@ class TimecardClient(QMainWindow):
                             self.attempt_refresh()
             except Exception as e:
                 print(f"Error loading credentials: {e}")
+        else:
+            self.overlay_position = None
 
     def save_credentials(self):
         try:
+            data = {
+                'access_token': self.access_token,
+                'refresh_token': self.refresh_token
+            }
+            if hasattr(self, 'overlay_position') and self.overlay_position:
+                data['overlay_position'] = self.overlay_position
             with open(self.config_file, 'w') as f:
-                json.dump({
-                    'access_token': self.access_token,
-                    'refresh_token': self.refresh_token
-                }, f)
+                json.dump(data, f)
         except Exception as e:
             print(f"Error saving credentials: {e}")
 
@@ -386,6 +398,15 @@ class TimecardClient(QMainWindow):
             return f"{hours:02d}:{minutes:02d}:{secs:02d}"
         else:
             return f"{minutes:02d}:{secs:02d}"
+
+    def save_overlay_position(self, position):
+        self.overlay_position = {'x': position.x(), 'y': position.y()}
+        self.save_credentials()
+
+    def get_overlay_position(self):
+        if hasattr(self, 'overlay_position') and self.overlay_position:
+            return QPoint(self.overlay_position['x'], self.overlay_position['y'])
+        return None
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
