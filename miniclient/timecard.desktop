@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Timecard App
+Comment=Track your time with domains and categories
+Exec=/bin/bash -c "cd '%INSTALL_PATH%' && source venv/bin/activate && python app.py"
+Icon=%INSTALL_PATH%/icon.png
+Terminal=false
+Categories=Utility;Office;
