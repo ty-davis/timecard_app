@@ -48,7 +48,7 @@ class OverlayTimer(QWidget):
 
         self.time_label = QLabel()
         self.time_label.setStyleSheet("""
-            color: #aaaaaa;
+            color: #FFFFFF;
             font-size: 35px;
             font-weight: bold;
             background-color: transparent;
@@ -58,7 +58,7 @@ class OverlayTimer(QWidget):
 
         self.info_label = QLabel()
         self.info_label.setStyleSheet("""
-            color: #FFFFFF;
+            color: #c8c8c8;
             font-size: 16px;
             background-color: transparent;
             padding: 0px;
