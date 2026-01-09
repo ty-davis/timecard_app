@@ -125,7 +125,10 @@ class OverlayTimer(QWidget):
             return f"{minutes:02d}:{secs:02d}"
 
     def mousePressEvent(self, event):
-        if (event.modifiers() == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier)):
+        if (event.modifiers() == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier) and 
+            event.buttons() == Qt.MouseButton.RightButton):
+            self.switch_to_least_time_timer()
+        elif (event.modifiers() == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier)):
             self.close()
             self.parent_window.show()
             self.parent_window.load_records()
@@ -144,6 +147,49 @@ class OverlayTimer(QWidget):
             self.parent_window.save_overlay_position(self.pos())
         self.dragging = False
         event.accept()
+
+    def switch_to_least_time_timer(self):
+        try:
+            headers = {'Authorization': f'Bearer {self.parent_window.access_token}'}
+            response = requests.get(f"{self.parent_window.api_base}/timerecords", headers=headers)
+
+            if response.status_code == 200:
+                records = response.json()
+                open_records = [r for r in records if r.get('timeout') is None]
+
+                if not open_records:
+                    return
+
+                min_record = None
+                min_elapsed = float('inf')
+
+                for record in open_records:
+                    timein_str = record.get('timein')
+                    if timein_str:
+                        try:
+                            timein = datetime.strptime(timein_str, '%Y-%m-%dT%H:%M:%SZ')
+                            elapsed = (datetime.utcnow() - timein).total_seconds()
+                            if elapsed < min_elapsed:
+                                min_elapsed = elapsed
+                                min_record = record
+                        except Exception as e:
+                            print(f"Error parsing time: {e}")
+
+                if min_record and min_record.get('id') != self.record.get('id'):
+                    domain_attr = self.parent_window.attributes_cache.get(min_record.get('domain_id'), {})
+                    category_attr = self.parent_window.attributes_cache.get(min_record.get('category_id'), {})
+
+                    min_record['domain_name'] = domain_attr.get('name', 'Unknown') if isinstance(domain_attr, dict) else 'Unknown'
+                    min_record['category_name'] = category_attr.get('name', 'Unknown') if isinstance(category_attr, dict) else 'Unknown'
+                    min_record['domain_color'] = domain_attr.get('color') if isinstance(domain_attr, dict) else None
+
+                    self.record = min_record
+                    self.update_time()
+                    self.update_info()
+            elif response.status_code == 401:
+                self.parent_window.attempt_refresh()
+        except Exception as e:
+            print(f"Error switching timer: {e}")
 
 class TimecardClient(QMainWindow):
     def __init__(self):
