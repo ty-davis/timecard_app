@@ -104,10 +104,10 @@ class OverlayTimer(QWidget):
         domain = self.record.get('domain_name', 'Unknown')
         category = self.record.get('category_name', 'Unknown')
         domain_color = self.record.get('domain_color', '#aaaaaa')
-        
+
         if not domain_color or domain_color == 'null':
             domain_color = '#aaaaaa'
-        
+
         self.info_label.setText(f"{domain} - {category}")
         self.color_bar.setStyleSheet(f"""
             background-color: {domain_color};
@@ -369,11 +369,11 @@ class TimecardClient(QMainWindow):
                     if r.get('timeout') is None:
                         domain_attr = self.attributes_cache.get(r.get('domain_id'), {})
                         category_attr = self.attributes_cache.get(r.get('category_id'), {})
-                        
+
                         r['domain_name'] = domain_attr.get('name', 'Unknown') if isinstance(domain_attr, dict) else 'Unknown'
                         r['category_name'] = category_attr.get('name', 'Unknown') if isinstance(category_attr, dict) else 'Unknown'
                         r['domain_color'] = domain_attr.get('color') if isinstance(domain_attr, dict) else None
-                        
+
                         self.open_records.append(r)
                 self.display_records()
             elif response.status_code == 401:
