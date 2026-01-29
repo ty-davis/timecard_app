@@ -181,20 +181,10 @@ onMounted(() => {
 const loadHistory = async () => {
   loading.value = true;
   try {
-    console.log('Loading sync history with filters:', {
-      status: statusFilter.value,
-      limit: limitFilter.value
-    });
-    
-    const result = await jiraStore.getSyncHistory(
+    syncHistory.value = await jiraStore.getSyncHistory(
       statusFilter.value as 'success' | 'failed' | undefined,
       limitFilter.value
     );
-    
-    console.log('Sync history result:', result);
-    syncHistory.value = result;
-    
-    console.log('syncHistory.value now:', syncHistory.value);
   } catch (error) {
     console.error('Error loading sync history:', error);
   } finally {

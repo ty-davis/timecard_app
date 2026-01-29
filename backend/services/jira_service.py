@@ -2,6 +2,12 @@ from atlassian import Jira
 from typing import Dict, List, Optional
 from datetime import datetime
 from models.jira import JiraConnection
+from services.jira_errors import (
+    parse_jira_error, 
+    validate_jira_issue_key,
+    JiraConnectionError,
+    JiraAuthenticationError
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -42,12 +48,59 @@ class JiraService:
             }
         except Exception as e:
             logger.error(f"JIRA connection test failed: {str(e)}")
+            error_info = parse_jira_error(e)
             return {
                 'success': False,
-                'error': str(e)
+                'error': error_info['user_message']
             }
     
     def search_issues(self, query: str, max_results: int = 50) -> List[Dict]:
+        """
+        Search for JIRA issues using JQL
+        
+        Args:
+            query: Search query (will be used in JQL)
+            max_results: Maximum number of results to return
+            
+        Returns: List of issue dicts
+        """
+        try:
+            # Validate input
+            if not query or len(query.strip()) == 0:
+                return []
+            
+            # Build JQL query - search in summary, description, and key
+            jql = f'text ~ "{query}" OR key ~ "{query}"'
+            
+            # Execute search
+            issues = self.client.jql(jql, limit=max_results)
+            
+            if not issues or 'issues' not in issues:
+                return []
+            
+            # Format results
+            formatted_issues = []
+            for issue in issues['issues']:
+                fields = issue.get('fields', {})
+                assignee = fields.get('assignee')
+                
+                formatted_issues.append({
+                    'key': issue.get('key'),
+                    'summary': fields.get('summary', ''),
+                    'status': fields.get('status', {}).get('name', 'Unknown'),
+                    'assignee': assignee.get('displayName') if assignee else None,
+                    'project': fields.get('project', {}).get('name', ''),
+                    'issueType': fields.get('issuetype', {}).get('name', '')
+                })
+            
+            return formatted_issues
+            
+        except Exception as e:
+            logger.error(f"Failed to search JIRA issues: {str(e)}")
+            error_info = parse_jira_error(e)
+            # For search, we'll just return empty results but log the error
+            logger.warning(f"Search error type: {error_info['type']}, message: {error_info['user_message']}")
+            return []
         """
         Search for JIRA issues using JQL or text search
         
@@ -185,6 +238,21 @@ class JiraService:
         Returns: Dict with 'success' boolean and 'worklog_id' or 'error'
         """
         try:
+            # Validate issue key format
+            validation_error = validate_jira_issue_key(issue_key)
+            if validation_error:
+                return {
+                    'success': False,
+                    'error': validation_error
+                }
+            
+            # Validate time spent (must be at least 60 seconds / 1 minute)
+            if time_spent_seconds < 60:
+                return {
+                    'success': False,
+                    'error': 'Time entry must be at least 1 minute'
+                }
+            
             # Convert datetime to JIRA format (ISO 8601)
             started_str = started.strftime('%Y-%m-%dT%H:%M:%S.000+0000')
             
@@ -203,9 +271,10 @@ class JiraService:
             
         except Exception as e:
             logger.error(f"Failed to create worklog for {issue_key}: {str(e)}", exc_info=True)
+            error_info = parse_jira_error(e)
             return {
                 'success': False,
-                'error': str(e)
+                'error': error_info['user_message']
             }
     
     def delete_worklog(self, issue_key: str, worklog_id: str) -> Dict:

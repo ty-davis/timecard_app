@@ -245,14 +245,11 @@ export const useJiraStore = defineStore('jira', () => {
       if (limit) params.limit = limit;
       if (recordId) params.record_id = recordId;
 
-      console.log('getSyncHistory API call with params:', params);
       const response = await api.get('/jira/sync/history', { params });
-      console.log('getSyncHistory API response:', response.data);
       return response.data.history;
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Failed to get sync history';
       console.error('Error getting sync history:', err);
-      console.error('Error response:', err.response);
       return [];
     } finally {
       isLoading.value = false;

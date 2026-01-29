@@ -4,6 +4,7 @@ from database import db
 from models.jira import JiraConnection, JiraSyncLog
 from models.time_record import TimeRecord
 from services.jira_service import JiraService
+from services.jira_errors import validate_time_record_for_sync, parse_jira_error
 from datetime import datetime, timezone
 import logging
 
@@ -293,12 +294,10 @@ def sync_record(record_id):
         if not record:
             return jsonify({'error': 'Time record not found'}), 404
         
-        # Validate record has required fields
-        if not record.jira_issue_key:
-            return jsonify({'error': 'Time record does not have a JIRA issue key'}), 400
-        
-        if not record.timein or not record.timeout:
-            return jsonify({'error': 'Time record must have both timein and timeout'}), 400
+        # Validate record using comprehensive validation
+        validation_error = validate_time_record_for_sync(record)
+        if validation_error:
+            return jsonify({'error': validation_error}), 400
         
         # Get user's active connection
         connection = JiraConnection.query.filter_by(
@@ -307,7 +306,7 @@ def sync_record(record_id):
         ).first()
         
         if not connection:
-            return jsonify({'error': 'No active JIRA connection found'}), 404
+            return jsonify({'error': 'No active JIRA connection found. Please set up JIRA connection in settings.'}), 404
         
         # Calculate time spent in seconds
         time_diff = record.timeout - record.timein
