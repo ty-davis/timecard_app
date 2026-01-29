@@ -3,10 +3,17 @@ from flask_cors import CORS
 from config import Config
 from database import db, jwt, migrate
 import click
+import logging
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+    )
 
     CORS(app)
     db.init_app(app)
@@ -23,12 +30,15 @@ def create_app():
 
     from models.user import User
     from models.time_record import TimeRecord
+    from models.jira import JiraConnection, JiraSyncLog
 
     from routes.auth import auth_bp
     from routes.time_records import time_records_bp
+    from routes.jira import jira_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api')
     app.register_blueprint(time_records_bp, url_prefix='/api')
+    app.register_blueprint(jira_bp, url_prefix='/api')
 
     @app.cli.command()
     def init_db():

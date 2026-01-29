@@ -45,6 +45,9 @@
         <InputText type="text" id="externalLink" v-model="externalLink" placeholder="obsidian://..." style="width: 100%;"/>
       </div>
 
+      <!-- JIRA Issue Selector -->
+      <JiraIssueSelector v-model="jiraIssueKey" />
+
       <div class="flex space-x-4">
         <div class="p-field flex-1 flex flex-col gap-2">
           <label for="timein">In:</label>
@@ -109,6 +112,7 @@ import { ref, watch, reactive, toRefs, computed, nextTick } from 'vue';
 import type { RecordAttribute, TimeRecord } from '@/types';
 import { toLocalDateTimeString } from '@/utils/timeUtils';
 import TextSelect from '@/components/TextSelect.vue';
+import JiraIssueSelector from '@/components/JiraIssueSelector.vue';
 import { useConfirm } from 'primevue/useconfirm';
 import { useRouter } from 'vue-router';
 
@@ -123,6 +127,7 @@ const props = defineProps<{
 const localTimein = ref<Date | null>(new Date());
 const localTimeout = ref<Date | null>(null);
 const showTimeout = ref<boolean>(false);
+const jiraIssueKey = ref<string | null>(null);
 
 const emit = defineEmits(['save-record', 'delete-record']);
 
@@ -189,6 +194,7 @@ watch(() => props.timeRecord, async (newRecord) => {
     }
 
     externalLink.value = props.timeRecord.external_link || '';
+    jiraIssueKey.value = props.timeRecord.jira_issue_key || null;
 
     await nextTick();
     isPopulating.value = false;
@@ -252,6 +258,7 @@ const prepTimeRecord = (clockOut: boolean) => {
   record.timeout = utcDateTimeOut;
 
   record.external_link = externalLink.value;
+  record.jira_issue_key = jiraIssueKey.value;
 
 }
 

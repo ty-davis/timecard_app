@@ -96,8 +96,9 @@ def create_time_record():
         category_id = data['category_id'],
         title_id = data['title_id'],
         timein = timein,
-        external_link = data['external_link'],
-        notes = data['notes'],
+        external_link = data.get('external_link'),
+        notes = data.get('notes'),
+        jira_issue_key = data.get('jira_issue_key'),
     )
 
     db.session.add(new_record)
@@ -158,6 +159,8 @@ def update_time_record(record_id):
         record.external_link = data['external_link']
     if 'notes' in data and data['notes']:
         record.notes = data['notes']
+    if 'jira_issue_key' in data:
+        record.jira_issue_key = data['jira_issue_key']
 
     db.session.commit()
 
