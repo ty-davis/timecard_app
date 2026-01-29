@@ -515,6 +515,7 @@ def get_sync_history():
         # Get query parameters for filtering
         status = request.args.get('status')  # 'success', 'failed', or None for all
         limit = request.args.get('limit', 100, type=int)
+        record_id = request.args.get('record_id', type=int)  # Filter by specific record
         
         # Build query - join with time_records to ensure user ownership
         query = db.session.query(JiraSyncLog).join(
@@ -523,6 +524,10 @@ def get_sync_history():
         ).filter(
             TimeRecord.user_id == user_id
         )
+        
+        # Apply record_id filter if provided
+        if record_id:
+            query = query.filter(JiraSyncLog.time_record_id == record_id)
         
         # Apply status filter if provided
         if status:

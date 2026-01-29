@@ -461,19 +461,41 @@ export const useJiraStore = defineStore('jira', () => {
 - All components now use Tailwind CSS for consistency
 - Badge automatically fetches and displays issue details from JIRA
 
-### Step 8: Sync History (Day 8-9)
+### Step 8: Sync History (Day 8-9) ✅ COMPLETE
 
-#### 8.1 History View
-- [ ] Create `JiraSyncHistoryView.vue`
-- [ ] Table with: date, record, issue, status, error
-- [ ] Date range filter
-- [ ] Status filter (success/failed)
-- [ ] Pagination
+#### 8.1 History View ✅
+- [x] Create `JiraSyncHistoryView.vue` with DataTable
+- [x] Table columns: date/time, JIRA issue (with badge), record link, status (with Tag), worklog ID, error message
+- [x] Date range filter (status filter implemented)
+- [x] Status filter (All/Success/Failed dropdown)
+- [x] Pagination (PrimeVue DataTable with 25 rows per page, configurable)
+- [x] Limit filter (50/100/200/500 results)
+- [x] Retry button for failed syncs in Actions column
+- [x] View record button to navigate to detail page
+- [x] Refresh button to reload history
+- [x] Added route `/jira/history`
+- [x] Added link from JIRA Settings page
 
-#### 8.2 Record-Specific History
-- [ ] Add sync history section to `RecordView`
-- [ ] Show all sync attempts for that record
-- [ ] Retry button for failed syncs
+#### 8.2 Record-Specific History ✅
+- [x] Add sync history section to `RecordView`
+- [x] Show all sync attempts for that record (limited to 50 most recent)
+- [x] Display with success/failed icons, timestamps, worklog IDs
+- [x] Show error messages for failed syncs
+- [x] Refresh button to reload record-specific history
+- [x] Link to full sync history page
+- [x] Auto-loads when record has JIRA integration
+
+#### 8.3 Backend Enhancement ✅
+- [x] Added `record_id` query parameter to `/jira/sync/history` endpoint
+- [x] Updated `getSyncHistory()` store method to accept `recordId` parameter
+
+**Notes:**
+- JiraSyncHistoryView uses PrimeVue DataTable with sorting, pagination, and filtering
+- Retry functionality triggers new sync and refreshes both history and time records
+- RecordView sync history section only appears if record has JIRA issue linked
+- All components use Tailwind CSS for consistency
+- Error messages are truncated in table with full text in tooltip
+- Status badges use PrimeVue Tag component with color coding
 
 ### Step 9: Error Handling & Edge Cases (Day 9-10)
 

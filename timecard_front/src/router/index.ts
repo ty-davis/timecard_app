@@ -10,6 +10,7 @@ import RecordView from './RecordView.vue';
 import RecordEditView from './RecordEditView.vue';
 import ClockView from './ClockView.vue';
 import JiraSettingsView from './JiraSettingsView.vue';
+import JiraSyncHistoryView from './JiraSyncHistoryView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,6 +25,7 @@ const router = createRouter({
     { path: '/record/edit/:id', component: RecordEditView},
     { path: '/clock', component: ClockView},
     { path: '/settings/jira', component: JiraSettingsView},
+    { path: '/jira/history', component: JiraSyncHistoryView},
   ],
 })
 

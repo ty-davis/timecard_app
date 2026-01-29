@@ -17,7 +17,18 @@ onMounted(() => {
 <template>
   <div class="settings-container">
     <div class="settings-content">
-      <h1>JIRA Integration Settings</h1>
+      <div class="flex items-center justify-between mb-4">
+        <h1>JIRA Integration Settings</h1>
+        <RouterLink to="/jira/history">
+          <Button 
+            label="View Sync History" 
+            icon="pi pi-history"
+            severity="secondary"
+            outlined
+          />
+        </RouterLink>
+      </div>
+      
       <p class="description">
         Connect your JIRA account to automatically sync time records as worklogs.
       </p>

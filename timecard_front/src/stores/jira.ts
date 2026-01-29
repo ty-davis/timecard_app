@@ -232,8 +232,9 @@ export const useJiraStore = defineStore('jira', () => {
   };
 
   const getSyncHistory = async (
-    status?: 'success' | 'failed',
-    limit?: number
+    status?: 'success' | 'failed' | null,
+    limit?: number,
+    recordId?: number
   ): Promise<JiraSyncLog[]> => {
     isLoading.value = true;
     error.value = null;
@@ -242,12 +243,16 @@ export const useJiraStore = defineStore('jira', () => {
       const params: any = {};
       if (status) params.status = status;
       if (limit) params.limit = limit;
+      if (recordId) params.record_id = recordId;
 
+      console.log('getSyncHistory API call with params:', params);
       const response = await api.get('/jira/sync/history', { params });
+      console.log('getSyncHistory API response:', response.data);
       return response.data.history;
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Failed to get sync history';
       console.error('Error getting sync history:', err);
+      console.error('Error response:', err.response);
       return [];
     } finally {
       isLoading.value = false;
