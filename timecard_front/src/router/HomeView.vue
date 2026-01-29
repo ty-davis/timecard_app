@@ -6,7 +6,8 @@ import { useRecordAttributesStore } from '@/stores/recordattributes';
 import { useTimeRecordsStore } from '@/stores/timerecords';
 import TimecardForm from '@/components/TimecardForm.vue';
 import Calendar from '@/components/Calendar.vue';
-import LittleRecord from '@/components/LittleRecord.vue';
+import GroupedRecordsList from '@/components/GroupedRecordsList.vue';
+import DateRangeSelector from '@/components/DateRangeSelector.vue';
 import type { TimeRecord, RecordAttribute } from '@/types';
 import { toLocalDateTimeString, showTimeDifference } from '@/utils/timeUtils';
 import { useConfirm } from 'primevue/useconfirm';
@@ -146,7 +147,13 @@ onMounted(async () => {
         </div>
       </Panel>
 
-      <Panel class="mt-6" header="History">
+      <Panel class="mt-6">
+        <template #header>
+          <div class="flex items-center justify-between w-full">
+            <span>History</span>
+            <DateRangeSelector />
+          </div>
+        </template>
         <Tabs value="0">
           <TabList class="text-center">
             <Tab value="0">List</Tab>
@@ -154,9 +161,11 @@ onMounted(async () => {
           </TabList>
           <TabPanels>
             <TabPanel value="0">
-              <template v-for="record in timeRecords.sort((a, b) => new Date(b.timein).getTime() - new Date(a.timein).getTime())">
-                <LittleRecord :record="record" :recordAttributes="recordAttributes" @delete-record="deleteConfirm(record)"/>
-              </template>
+              <GroupedRecordsList 
+                :records="timeRecords" 
+                :recordAttributes="recordAttributes" 
+                @delete-record="deleteConfirm"
+              />
             </TabPanel>
             <TabPanel value="1">
               <Calendar :records="timeRecords" :recordAttributes="recordAttributes">
