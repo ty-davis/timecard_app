@@ -1,6 +1,6 @@
 # JIRA Integration Plan for Timecard App
 
-**Status:** 🔨 In Progress - Step 5 Complete (Issue Linking in Form)  
+**Status:** 🔨 In Progress - Step 6 Complete (Sync Functionality - Single Record)  
 **Branch:** `jira`  
 **Started:** 2026-01-29
 
@@ -398,20 +398,20 @@ export const useJiraStore = defineStore('jira', () => {
 - Form properly saves and loads jira_issue_key
 - Type checking passes successfully
 
-### Step 6: Sync Functionality (Day 6-7)
+### Step 6: Sync Functionality (Day 6-7) ✅ COMPLETED
 
-#### 6.1 Sync Button Component
-- [ ] Create `JiraSyncButton.vue`
-- [ ] Three states: not synced, syncing, synced
-- [ ] Error state with tooltip
-- [ ] Re-sync capability
-- [ ] Icon indicators (✓, ✗, ⟳)
+#### 6.1 Sync Button Component ✅
+- [x] Create `JiraSyncButton.vue`
+- [x] Three states: not synced, syncing, synced
+- [x] Error state with tooltip
+- [x] Re-sync capability
+- [x] Icon indicators (✓, ✗, ⟳)
 
-#### 6.2 Single Record Sync
-- [ ] Add sync button to `TimecardForm` (for existing records)
-- [ ] Add sync button to `RecordView` detail page
-- [ ] Show sync status in UI
-- [ ] Handle success/error feedback
+#### 6.2 Single Record Sync ✅
+- [x] Add sync button to `TimecardForm` (for existing records)
+- [x] Add sync button to `RecordView` detail page
+- [x] Show sync status in UI
+- [x] Handle success/error feedback
 
 #### 6.3 Bulk Sync
 - [ ] Add checkboxes to `GroupedRecordsList`
@@ -419,25 +419,47 @@ export const useJiraStore = defineStore('jira', () => {
 - [ ] Progress indicator for multiple syncs
 - [ ] Summary of results (X succeeded, Y failed)
 
-### Step 7: Visual Indicators (Day 7-8)
+**Notes:**
+- Created comprehensive JiraSyncButton component with 4 states: not-synced, syncing, synced, error
+- Smart state detection: checks for connection, issue key, and timeout status
+- Icon indicators: spinner (syncing), check (synced), exclamation (error), cloud-upload (ready)
+- Detailed tooltips with error messages and last sync time
+- Integrated into TimecardForm - shows for clocked-out records with JIRA issues
+- Auto-updates record state after successful sync
+- Toast notifications for success/error feedback
+- Color-coded buttons (green for synced, red for error)
+- Disabled state when prerequisites not met
+- Type checking passes successfully
 
-#### 7.1 Issue Badge Component
-- [ ] Create `JiraIssueBadge.vue`
-- [ ] Display issue key with link to JIRA
-- [ ] Color-coded by status
-- [ ] Tooltip with issue summary
+### Step 7: Visual Indicators (Day 7-8) ✅ COMPLETE
 
-#### 7.2 Integrate Badges
-- [ ] Add to `LittleRecord` component
-- [ ] Add to `RecordView` detail page
-- [ ] Add to `TimecardForm` when viewing
+#### 7.1 Issue Badge Component ✅
+- [x] Create `JiraIssueBadge.vue`
+- [x] Display issue key with link to JIRA
+- [x] Color-coded by status (blue default, green for done, yellow for in-progress, red for blocked)
+- [x] Tooltip with issue summary
+- [x] Three sizes: small, medium, large
+- [x] Auto-fetches issue details on mount
+- [x] Uses Tailwind CSS with dark mode support
 
-#### 7.3 Sync Status Icons
-- [ ] Add sync status indicator to `LittleRecord`
-- [ ] Add to list views
-- [ ] Green checkmark = synced
-- [ ] Red X = error
-- [ ] Gray = not synced
+#### 7.2 Integrate Badges ✅
+- [x] Add to `LittleRecord` component (replaced inline badge)
+- [x] Add to `RecordView` detail page (with summary and sync button)
+- [x] Add to `TimecardForm` when viewing (shows above selector for existing records)
+
+#### 7.3 Sync Status Icons ✅
+- [x] Add sync status indicator to `LittleRecord`
+- [x] Add to list views
+- [x] Green checkmark = synced (`pi-check-circle`)
+- [x] Red X = error (`pi-exclamation-circle`)
+- [x] Gray cloud = not synced (`pi-cloud`)
+- [x] Uses Tailwind color classes with dark mode variants
+
+**Notes:**
+- JiraIssueBadge component is fully reusable with size and showSummary props
+- Status color-coding handles: done/closed/resolved (green), in-progress/review (yellow), blocked/waiting (red), default (blue)
+- All components now use Tailwind CSS for consistency
+- Badge automatically fetches and displays issue details from JIRA
 
 ### Step 8: Sync History (Day 8-9)
 

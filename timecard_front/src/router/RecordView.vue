@@ -4,13 +4,17 @@ import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
 import { useRecordAttributesStore } from '@/stores/recordattributes';
 import { useTimeRecordsStore } from '@/stores/timerecords';
+import { useJiraStore } from '@/stores/jira';
 import { showTime, timeDiff } from '@/utils/timeUtils';
 import { useRoute } from 'vue-router';
 import { secondaryColor } from '@/utils/colorUtils';
 import type { TimeRecord, RecordAttribute } from '@/types';
+import JiraIssueBadge from '@/components/JiraIssueBadge.vue';
+import JiraSyncButton from '@/components/JiraSyncButton.vue';
 
 const auth = useAuthStore();
 const route = useRoute();
+const jiraStore = useJiraStore();
 
 const recordId = computed(() => parseInt(route.params.id as string, 10));
 
@@ -41,6 +45,7 @@ onMounted(async () => {
     try {
       await recordAttributesStore.getRecordAttributes();
       await timeRecordsStore.getTimeRecords();
+      await jiraStore.getConnections();
     } catch (error: any) {
       if (error.response?.status === 401) {
         auth.logout();
@@ -88,6 +93,20 @@ const titleStyle = computed(() => {
           <span :style="categoryStyle" class="border-b p-1 text-lg inline-block mb-2"> {{ categoryRA?.name }} </span>
         </div>
         <span :style="titleStyle" class="p-1"> {{ titleRA?.name }}</span>
+      </div>
+
+      <!-- JIRA Integration Section -->
+      <div v-if="record?.jira_issue_key" class="mb-4 flex items-center gap-3">
+        <JiraIssueBadge 
+          :issue-key="record.jira_issue_key"
+          :show-summary="true"
+          size="medium"
+        />
+        <JiraSyncButton 
+          v-if="record.timeout"
+          :record="record"
+          size="small"
+        />
       </div>
 
       <a :href="`${ record?.external_link }`" class="text-blue-500 hover:underline">External Link</a>

@@ -45,8 +45,19 @@
         <InputText type="text" id="externalLink" v-model="externalLink" placeholder="obsidian://..." style="width: 100%;"/>
       </div>
 
-      <!-- JIRA Issue Selector -->
-      <JiraIssueSelector v-model="jiraIssueKey" />
+      <!-- JIRA Issue Section -->
+      <div class="flex flex-col gap-2">
+        <!-- Show badge if already linked (viewing mode) -->
+        <div v-if="timeRecord.id && jiraIssueKey" class="flex items-center gap-2">
+          <JiraIssueBadge 
+            :issue-key="jiraIssueKey"
+            :show-summary="true"
+            size="medium"
+          />
+        </div>
+        <!-- Issue Selector (editing mode) -->
+        <JiraIssueSelector v-model="jiraIssueKey" />
+      </div>
 
       <div class="flex space-x-4">
         <div class="p-field flex-1 flex flex-col gap-2">
@@ -67,6 +78,11 @@
       <div v-if="showTimeout || timeRecord.timeout" class="p-field flex-1 flex flex-col gap-2">
         <label for="timeout">Out:</label>
         <DatePicker v-model="localTimeout" showTime hourFormat="12" fluid/>
+      </div>
+
+      <!-- JIRA Sync Button (for existing records with JIRA issue) -->
+      <div v-if="timeRecord.id && timeRecord.timeout && timeRecord.jira_issue_key" class="flex justify-end">
+        <JiraSyncButton :record="record" :show-label="true" size="large" />
       </div>
 
       <div class="flex gap-2 flex-wrap">
@@ -113,6 +129,8 @@ import type { RecordAttribute, TimeRecord } from '@/types';
 import { toLocalDateTimeString } from '@/utils/timeUtils';
 import TextSelect from '@/components/TextSelect.vue';
 import JiraIssueSelector from '@/components/JiraIssueSelector.vue';
+import JiraSyncButton from '@/components/JiraSyncButton.vue';
+import JiraIssueBadge from '@/components/JiraIssueBadge.vue';
 import { useConfirm } from 'primevue/useconfirm';
 import { useRouter } from 'vue-router';
 

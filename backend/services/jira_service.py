@@ -186,30 +186,23 @@ class JiraService:
         """
         try:
             # Convert datetime to JIRA format (ISO 8601)
-            started_str = started.strftime('%Y-%m-%dT%H:%M:%S.000%z')
-            if not started_str.endswith('+0000'):
-                # If no timezone, assume UTC
-                started_str = started.strftime('%Y-%m-%dT%H:%M:%S.000+0000')
+            started_str = started.strftime('%Y-%m-%dT%H:%M:%S.000+0000')
             
-            # Build worklog data
-            worklog_data = {
-                'timeSpentSeconds': time_spent_seconds,
-                'started': started_str
-            }
-            
-            if comment:
-                worklog_data['comment'] = comment
-            
-            # Create worklog
-            result = self.client.issue_add_worklog(issue_key, worklog_data)
+            # Create worklog using correct method signature
+            result = self.client.issue_worklog(
+                key=issue_key,
+                started=started_str,
+                time_sec=time_spent_seconds,
+                comment=comment
+            )
             
             return {
                 'success': True,
-                'worklog_id': result.get('id')
+                'worklog_id': result.get('id') if result else None
             }
             
         except Exception as e:
-            logger.error(f"Failed to create worklog for {issue_key}: {str(e)}")
+            logger.error(f"Failed to create worklog for {issue_key}: {str(e)}", exc_info=True)
             return {
                 'success': False,
                 'error': str(e)
