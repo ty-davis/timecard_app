@@ -28,6 +28,7 @@ import Password from 'primevue/password';
 import Select from 'primevue/select';
 import Tag from 'primevue/tag';
 import Toast from 'primevue/toast';
+import Tooltip from 'primevue/tooltip';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -60,5 +61,7 @@ app.component('Password', Password);
 app.component('Select', Select);
 app.component('Tag', Tag);
 app.component('Toast', Toast);
+
+app.directive('tooltip', Tooltip);
 
 app.mount('#app');
