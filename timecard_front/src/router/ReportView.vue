@@ -6,6 +6,7 @@ import { useRecordAttributesStore } from '@/stores/recordattributes';
 import { useTimeRecordsStore } from '@/stores/timerecords';
 import { showTime, timeDiff } from '@/utils/timeUtils';
 import SummaryCard from '@/components/SummaryCard.vue';
+import DateRangeSelector from '@/components/DateRangeSelector.vue';
 
 import type { TimeRecord, RecordAttribute, SummaryData } from '@/types';
 
@@ -74,7 +75,9 @@ onMounted(async () => {
 <template>
   <Card>
     <template #content>
-      <div class="mb-1">Last 2 weeks</div>
+      <div class="mb-4 flex items-center gap-2">
+        <DateRangeSelector />
+      </div>
       <div class="flex flex-col gap-2">
         <div v-for="d in mainData">
           <SummaryCard :summaryData="d" :recordAttributes="recordAttributes" :maxTime="maxTime"/>
