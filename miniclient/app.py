@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                               QLineEdit, QPushButton, QListWidget, QLabel, 
                               QStackedWidget, QMessageBox, QListWidgetItem)
-from PyQt6.QtCore import QTimer, Qt, QPoint
-from PyQt6.QtGui import QFont
+from PyQt6.QtCore import QTimer, Qt, QPoint, QRect
+from PyQt6.QtGui import QFont, QScreen
 
 load_dotenv()
 
@@ -82,12 +82,30 @@ class OverlayTimer(QWidget):
 
         self.resize(200, 100)
         saved_pos = self.parent_window.get_overlay_position()
-        if saved_pos:
+        if saved_pos and self.is_position_valid(saved_pos):
             self.move(saved_pos)
         else:
-            self.move(0, 0)
+            # Default to top-left of primary screen if no valid saved position
+            primary_screen = QApplication.primaryScreen()
+            if primary_screen:
+                screen_geometry = primary_screen.availableGeometry()
+                self.move(screen_geometry.x() + 50, screen_geometry.y() + 50)
+            else:
+                self.move(50, 50)
         self.update_time()
         self.update_info()
+
+    def is_position_valid(self, position):
+        """Check if the saved position is visible on any connected screen."""
+        screens = QApplication.screens()
+        window_rect = QRect(position.x(), position.y(), self.width(), self.height())
+        
+        for screen in screens:
+            screen_geometry = screen.geometry()
+            # Check if any part of the window would be visible on this screen
+            if screen_geometry.intersects(window_rect):
+                return True
+        return False
 
     def update_time(self):
         timein_str = self.record.get('timein')
