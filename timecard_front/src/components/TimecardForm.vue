@@ -62,7 +62,19 @@
       <div class="flex space-x-4">
         <div class="p-field flex-1 flex flex-col gap-2">
           <label for="timein">In:</label>
-          <DatePicker id="datepicker-12h" v-model="localTimein" showTime hourFormat="12" fluid/>
+          <div class="flex gap-2 items-center">
+            <div class="flex-1">
+              <DatePicker id="datepicker-12h" v-model="localTimein" showTime hourFormat="12" fluid @update:modelValue="onTimeinChange"/>
+            </div>
+            <Button 
+              v-if="showResetButton" 
+              icon="pi pi-refresh" 
+              severity="secondary"
+              text
+              @click="resetTimein"
+              v-tooltip.top="'Reset to current time'"
+            />
+          </div>
         </div>
       </div>
 
@@ -124,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, reactive, toRefs, computed, nextTick } from 'vue';
+import { ref, watch, reactive, toRefs, computed, nextTick, onMounted, onUnmounted } from 'vue';
 import type { RecordAttribute, TimeRecord } from '@/types';
 import { toLocalDateTimeString } from '@/utils/timeUtils';
 import TextSelect from '@/components/TextSelect.vue';
@@ -146,6 +158,11 @@ const localTimein = ref<Date | null>(new Date());
 const localTimeout = ref<Date | null>(null);
 const showTimeout = ref<boolean>(false);
 const jiraIssueKey = ref<string | null>(null);
+
+// Auto-update timein tracking
+const isAutoUpdating = ref<boolean>(true);
+const showResetButton = ref<boolean>(false);
+let autoUpdateInterval: number | null = null;
 
 const emit = defineEmits(['save-record', 'delete-record']);
 
@@ -333,6 +350,47 @@ const goToClock = () => {
     `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,scrollbars=no,resizable=yes`
   );
 };
+
+// Auto-update timein for new records
+const startAutoUpdate = () => {
+  if (!props.timeRecord.id) {
+    // Only auto-update for new records (not yet saved)
+    autoUpdateInterval = window.setInterval(() => {
+      if (isAutoUpdating.value) {
+        localTimein.value = new Date();
+      }
+    }, 60000); // Update every minute (60000ms)
+  }
+};
+
+const stopAutoUpdate = () => {
+  if (autoUpdateInterval !== null) {
+    clearInterval(autoUpdateInterval);
+    autoUpdateInterval = null;
+  }
+};
+
+const onTimeinChange = () => {
+  // User manually changed the time
+  if (!isPopulating.value && !props.timeRecord.id) {
+    isAutoUpdating.value = false;
+    showResetButton.value = true;
+  }
+};
+
+const resetTimein = () => {
+  localTimein.value = new Date();
+  isAutoUpdating.value = true;
+  showResetButton.value = false;
+};
+
+onMounted(() => {
+  startAutoUpdate();
+});
+
+onUnmounted(() => {
+  stopAutoUpdate();
+});
 
 
 </script>
